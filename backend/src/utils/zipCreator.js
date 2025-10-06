@@ -15,15 +15,31 @@ const createAndDownloadZip = async (data) => {
   zip.file('data.csv', data['data.csv']);
   zip.file('data.json', data['data.json']);
 
-  // Add captures to a separate folder
+  // Organize captures by effort level
   if (data.captures && data.captures.length > 0) {
-    const capturesFolder = zip.folder('captures');
+    // Group captures by effort level
+    const capturesByEffort = {};
+    
     for (const capture of data.captures) {
-      try {
-        const imageData = await fs.readFile(capture.filepath);
-        const filename = path.basename(capture.filepath);
-        capturesFolder.file(filename, imageData);
-      } catch (error) {
+      const effortLevel = capture.effortLevel || 0;
+      if (!capturesByEffort[effortLevel]) {
+        capturesByEffort[effortLevel] = [];
+      }
+      capturesByEffort[effortLevel].push(capture);
+    }
+    
+    // Create directories for each effort level
+    for (const [effortLevel, captures] of Object.entries(capturesByEffort)) {
+      const effortFolder = zip.folder(`effort_level_${effortLevel}`);
+      
+      for (const capture of captures) {
+        try {
+          const imageData = await fs.readFile(capture.filepath);
+          const filename = path.basename(capture.filepath);
+          effortFolder.file(filename, imageData);
+        } catch (error) {
+          console.error(`Failed to read capture file: ${capture.filepath}`, error);
+        }
       }
     }
   }

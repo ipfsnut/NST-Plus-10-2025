@@ -137,11 +137,14 @@ class StateManager {
   }  async addCapture(sessionId, captureData) {
     const captures = this.captures.get(sessionId) || [];
     const newCapture = {
-      timestamp: captureData.metadata.timestamp,
+      timestamp: captureData.metadata?.timestamp || captureData.timestamp,
       filename: captureData.filename,
       filepath: captureData.filepath,
-      settings: captureData.metadata.settings,
-      experimentId: captureData.metadata.experimentId
+      settings: captureData.metadata?.settings || captureData.settings,
+      experimentId: captureData.metadata?.experimentId || captureData.experimentId,
+      effortLevel: captureData.effortLevel,
+      trialNumber: captureData.metadata?.trialNumber || captureData.trialNumber,
+      digitIndex: captureData.metadata?.digitIndex || captureData.digitIndex
     };
     
     captures.push(newCapture);

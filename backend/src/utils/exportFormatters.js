@@ -31,7 +31,9 @@ const convertToCSV = (trialData) => {
     'effortLevel',
     'position',
     'digit',
-    'response',
+    'responseKey',
+    'responseType',
+    'responseStyle',
     'isCorrect',
     'responseTime',
     'sequence'
@@ -43,7 +45,9 @@ const convertToCSV = (trialData) => {
       effortLevel: trial.effortLevel,
       position: response.position,
       digit: response.digit,
-      response: response.response === 'f' ? 'odd' : 'even',
+      responseKey: response.response || '',
+      responseType: response.responseType || '',
+      responseStyle: response.responseStyle || '',
       isCorrect: response.isCorrect,
       responseTime: response.timestamp,
       sequence: trial.sequence

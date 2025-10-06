@@ -6,6 +6,7 @@ import { checkCameraAvailability } from './CameraCapture';
 const StartScreen = () => {
   const dispatch = useDispatch();
   const deviceStatus = useSelector(state => state.capture.deviceStatus);
+  const keyMapping = useSelector(state => state.experiment.keyMapping);
 
   useEffect(() => {
     checkCameraAvailability(dispatch);
@@ -25,11 +26,31 @@ const StartScreen = () => {
     return () => window.removeEventListener('keypress', handleKeyPress);
   }, []);
 
+  // Display instructions based on key mapping (if already loaded) or default instructions
+  const getInstructions = () => {
+    if (keyMapping) {
+      return (
+        <>
+          <p>Press '{keyMapping.odd}' for odd numbers</p>
+          <p>Press '{keyMapping.even}' for even numbers</p>
+        </>
+      );
+    } else {
+      // Show generic instructions before experiment starts
+      return (
+        <>
+          <p>You will be shown numbers one at a time</p>
+          <p>Press the correct key based on whether the number is odd or even</p>
+          <p>Instructions will be shown after you start</p>
+        </>
+      );
+    }
+  };
+
   return (
     <div className="start-screen">
       <h1>Number Switching Task</h1>
-      <p>Press 'f' for odd numbers</p>
-      <p>Press 'j' for even numbers</p>
+      {getInstructions()}
       {deviceStatus === 'ready' && (
         <div className="camera-status">Camera Ready ✓</div>
       )}

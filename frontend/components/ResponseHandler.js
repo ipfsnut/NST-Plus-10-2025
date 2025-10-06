@@ -8,6 +8,7 @@ const ResponseHandler = ({ experimentId }) => {
   const { phase, currentDigit, digitIndex, trialNumber } = useSelector(
     state => state.experiment.trialState
   );
+  const keyMapping = useSelector(state => state.experiment.keyMapping);
   
   const handleKeyPress = (event) => {
     // Only respond to f and j keys in running phase
@@ -16,17 +17,21 @@ const ResponseHandler = ({ experimentId }) => {
     // 1. Immediately blank the display
     dispatch(setDisplayBlank(true));
     
-    // Prepare the response data
+    // Prepare the response data using dynamic key mapping
     const isOdd = currentDigit % 2 === 1;
+    const responseType = event.key === keyMapping?.odd ? 'odd' : 'even';
+    const isCorrect = (responseType === 'odd' && isOdd) || (responseType === 'even' && !isOdd);
+    
     const responseData = {
       experimentId,
       response: event.key,
-      responseType: event.key === 'f' ? 'odd' : 'even',
+      responseType,
       digit: currentDigit,
-      isCorrect: (event.key === 'f' && isOdd) || (event.key === 'j' && !isOdd),
+      isCorrect,
       timestamp: Date.now(),
       position: digitIndex,
-      trialNumber
+      trialNumber,
+      responseStyle: keyMapping?.responseStyle // Tag the response style
     };
     
     // 2. Queue response after delay to allow blank screen display

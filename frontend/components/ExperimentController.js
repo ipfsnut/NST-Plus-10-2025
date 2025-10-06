@@ -4,7 +4,8 @@ import {
   updateTrialState,
   setTrials,
   setComplete,
-  setCaptureConfig  // Import the new action
+  setCaptureConfig,  // Import the new action
+  setKeyMapping  // Import key mapping action
 } from '../redux/experimentSlice';
 import { API_CONFIG } from '../config/api';
 
@@ -94,6 +95,12 @@ const ExperimentController = () => {
           if (experimentData.captureConfig) {
             console.log('Server provided captureConfig:', experimentData.captureConfig);
             dispatch(setCaptureConfig(experimentData.captureConfig));
+          }
+          
+          // Set the key mapping from backend
+          if (experimentData.keyMapping) {
+            console.log('Key mapping received:', experimentData.keyMapping);
+            dispatch(setKeyMapping(experimentData.keyMapping));
           }
           
           dispatch(setTrials(experimentData.trials));

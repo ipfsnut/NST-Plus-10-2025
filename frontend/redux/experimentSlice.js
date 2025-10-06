@@ -50,6 +50,7 @@ const experimentSlice = createSlice({
   initialState: {
     experimentId: null,
     displayBlank: false, // Simple flag to control digit visibility
+    keyMapping: null, // Will store {odd: 'f'/'j', even: 'j'/'f', responseStyle: 'standard'/'reversed'}
     trialState: {
       currentDigit: null,
       trialNumber: 0,
@@ -167,6 +168,11 @@ const experimentSlice = createSlice({
         ...state.captureConfig,
         cameraId: action.payload
       };
+    },
+    
+    // Action to set key mapping
+    setKeyMapping: (state, action) => {
+      state.keyMapping = action.payload;
     }
   }
 });
@@ -179,7 +185,8 @@ export const {
   setComplete,
   setDisplayBlank,
   setCaptureConfig,  // Export the new action
-  setSelectedCamera  // Export camera selection action
+  setSelectedCamera,  // Export camera selection action
+  setKeyMapping  // Export key mapping action
 } = experimentSlice.actions;
 
 export default experimentSlice.reducer;

@@ -20,11 +20,23 @@ const startSession = async (req, res) => {
     const experimentId = Date.now().toString();
     const trials = await generateTrialNumbers(config.experimentConfig);
     
+    // Randomly assign key mapping (50% chance of standard vs reversed)
+    const useStandardMapping = Math.random() < 0.5;
+    const keyMapping = useStandardMapping ? {
+      odd: 'f',
+      even: 'j',
+      responseStyle: 'standard'
+    } : {
+      odd: 'j',
+      even: 'f',
+      responseStyle: 'reversed'
+    };
 
     const session = await stateManager.createSession(experimentId, {
       type: 'nst',
       trials,
-      config: config.experimentConfig
+      config: config.experimentConfig,
+      keyMapping // Store key mapping in session
     });
     
 
@@ -46,7 +58,8 @@ const startSession = async (req, res) => {
       },
       experimentId,
       trials,
-      captureConfig: config.experimentConfig.captureConfig
+      captureConfig: config.experimentConfig.captureConfig,
+      keyMapping // Include key mapping in initial state
     };
 
 
@@ -368,7 +381,14 @@ const exportSessionData = async (req, res) => {
 
 
     const csvData = convertToCSV(trialData);
-    const jsonData = JSON.stringify(trialData, null, 2);
+    
+    // Include key mapping in the export metadata
+    const exportData = {
+      sessionId: sessionId,
+      keyMapping: session.keyMapping || null,
+      trials: trialData
+    };
+    const jsonData = JSON.stringify(exportData, null, 2);
 
     const zipFileName = await createAndDownloadZip({
       'data.csv': csvData,

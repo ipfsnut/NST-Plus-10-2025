@@ -11,9 +11,10 @@ class ResultsAggregator {
     
     return {
       sessionMetrics: this.calculateSessionMetrics(session),
-      trialDetails: this.processTrialDetails(stateVector),
+      trialDetails: this.processTrialDetails(stateVector, session.keyMapping),
       captureData: this.processCaptureData(stateVector),
       experimentConfig: session.experimentConfig,
+      keyMapping: session.keyMapping, // Include key mapping in results
       validationHash: this.generateChecksum(stateVector)
     };
   }
@@ -32,7 +33,7 @@ class ResultsAggregator {
     };
   }
 
-  processTrialDetails(stateVector) {
+  processTrialDetails(stateVector, keyMapping) {
     const { experimentState, responseState } = stateVector;
     
     return experimentState.trials.map((trial, index) => ({
@@ -41,7 +42,9 @@ class ResultsAggregator {
       responses: trial.number.split('').map((digit, pos) => ({
         digit: digit,
         response: responseState[index]?.key || null,
-        isCorrect: this.validateResponse(digit, responseState[index]?.key),
+        responseType: responseState[index]?.responseType || null,
+        responseStyle: responseState[index]?.responseStyle || keyMapping?.responseStyle || null,
+        isCorrect: this.validateResponse(digit, responseState[index]?.key, keyMapping),
         timestamp: responseState[index]?.timestamp || null,
         position: pos + 1
       })),
@@ -50,9 +53,10 @@ class ResultsAggregator {
     }));
   }
 
-  validateResponse(digit, key) {
+  validateResponse(digit, key, keyMapping) {
+    if (!key || !keyMapping) return false;
     const isOdd = digit % 2 !== 0;
-    return (isOdd && key === 'f') || (!isOdd && key === 'j');
+    return (isOdd && key === keyMapping.odd) || (!isOdd && key === keyMapping.even);
   }
 
   processCaptureData(stateVector) {

@@ -5,6 +5,7 @@ const DigitDisplay = memo(() => {
   const { currentDigit, phase } = useSelector(state => state.experiment.trialState);
   const { isCapturing } = useSelector(state => state.capture);
   const displayBlank = useSelector(state => state.experiment.displayBlank);
+  const keyMapping = useSelector(state => state.experiment.keyMapping);
 
   console.log('Rendering digit display:', {
     currentDigit,
@@ -13,12 +14,20 @@ const DigitDisplay = memo(() => {
     timestamp: Date.now()
   });
 
+  // Generate instruction text based on key mapping
+  const getInstructionText = () => {
+    if (keyMapping) {
+      return `Press '${keyMapping.odd}' for odd, '${keyMapping.even}' for even`;
+    }
+    return "Press 'f' for odd, 'j' for even"; // Fallback (shouldn't happen after experiment starts)
+  };
+
   return (
     <div className="digit-display">
       {!displayBlank ? (
         <>
           <div className="digit">{currentDigit}</div>
-          <div className="instruction">Press 'f' for odd, 'j' for even</div>
+          <div className="instruction">{getInstructionText()}</div>
           {phase === 'awaiting-response' && (
             <div className="response-indicator">Awaiting Response...</div>
           )}
