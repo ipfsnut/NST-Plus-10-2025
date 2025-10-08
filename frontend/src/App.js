@@ -1,6 +1,6 @@
 import React from 'react';
 import { Provider } from 'react-redux';
-import ExperimentController from '../components/ExperimentController';
+import ExperimentController from '../components/common/ExperimentController';
 import store from '../redux/store';
 import '../styles/theme.css';
 import '../styles/experiment.css';

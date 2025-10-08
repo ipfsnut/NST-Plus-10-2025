@@ -48,9 +48,13 @@ export const responseQueueMiddleware = store => next => action => {
 const experimentSlice = createSlice({
   name: 'experiment',
   initialState: {
+    // Participant information
+    participant: null,
+    
+    // Legacy NST fields (kept for compatibility)
     experimentId: null,
-    displayBlank: false, // Simple flag to control digit visibility
-    keyMapping: null, // Will store {odd: 'f'/'j', even: 'j'/'f', responseStyle: 'standard'/'reversed'}
+    displayBlank: false,
+    keyMapping: null,
     trialState: {
       currentDigit: null,
       trialNumber: 0,
@@ -65,12 +69,22 @@ const experimentSlice = createSlice({
       }
     },
     trials: [],
+    isRunning: false,
     isComplete: false,
     responses: {
       byPosition: {},
       queue: [],
       lastProcessed: null
     },
+    
+    // Session data for tasks
+    sessionData: {
+      totalTrials: 0,
+      responses: [],
+      startTime: null,
+      endTime: null
+    },
+    
     captureConfig: {
       firstCapture: 1,
       interval: 7,
@@ -173,6 +187,83 @@ const experimentSlice = createSlice({
     // Action to set key mapping
     setKeyMapping: (state, action) => {
       state.keyMapping = action.payload;
+    },
+    
+    // New actions for NST Plus integration
+    setParticipant: (state, action) => {
+      state.participant = action.payload;
+      state.experimentId = action.payload.participantId;
+    },
+    
+    startExperiment: (state, action) => {
+      state.isRunning = true;
+      state.isComplete = false;
+      state.sessionData.startTime = Date.now();
+      state.experimentId = action.payload.participantId;
+      
+      // Reset trial state
+      state.trialState = {
+        currentDigit: null,
+        trialNumber: 0,
+        digitIndex: 0,
+        phase: 'start',
+        validationStatus: null,
+        metadata: {
+          targetSwitches: null,
+          actualSwitches: null,
+          effortLevel: null,
+          sequence: []
+        }
+      };
+    },
+    
+    nextDigit: (state) => {
+      const currentTrial = state.trials[state.trialState.trialNumber];
+      if (!currentTrial) return;
+      
+      const nextDigitIndex = state.trialState.digitIndex + 1;
+      const SEQUENCE_LENGTH = 15;
+      
+      if (nextDigitIndex >= SEQUENCE_LENGTH) {
+        // Move to next trial or complete
+        if (state.trialState.trialNumber >= state.trials.length - 1) {
+          state.isComplete = true;
+          state.isRunning = false;
+          state.sessionData.endTime = Date.now();
+        } else {
+          state.trialState.trialNumber += 1;
+          state.trialState.digitIndex = 0;
+          state.trialState.currentDigit = state.trials[state.trialState.trialNumber]?.number[0];
+        }
+      } else {
+        state.trialState.digitIndex = nextDigitIndex;
+        state.trialState.currentDigit = currentTrial.number[nextDigitIndex];
+      }
+    },
+    
+    recordResponse: (state, action) => {
+      const response = {
+        ...action.payload,
+        trialNumber: state.trialState.trialNumber,
+        digitIndex: state.trialState.digitIndex,
+        digit: state.trialState.currentDigit
+      };
+      
+      state.sessionData.responses.push(response);
+      
+      // Also add to legacy queue for compatibility
+      const positionKey = `${response.trialNumber}-${response.digitIndex}`;
+      if (!state.responses.byPosition[positionKey]) {
+        state.responses.byPosition[positionKey] = response;
+        state.responses.queue.push(response);
+      }
+    },
+    
+    completeExperiment: (state) => {
+      state.isComplete = true;
+      state.isRunning = false;
+      state.sessionData.endTime = Date.now();
+      state.sessionData.totalTrials = state.trials.length;
     }
   }
 });
@@ -184,9 +275,15 @@ export const {
   setTrials,
   setComplete,
   setDisplayBlank,
-  setCaptureConfig,  // Export the new action
-  setSelectedCamera,  // Export camera selection action
-  setKeyMapping  // Export key mapping action
+  setCaptureConfig,
+  setSelectedCamera,
+  setKeyMapping,
+  // New NST Plus actions
+  setParticipant,
+  startExperiment,
+  nextDigit,
+  recordResponse,
+  completeExperiment
 } = experimentSlice.actions;
 
 export default experimentSlice.reducer;
