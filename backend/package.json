@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
+    "start:auto": "node scripts/start-with-mongo.js",
+    "dev": "nodemon src/app.js",
+    "dev:auto": "nodemon scripts/start-with-mongo.js"
   },
   "dependencies": {
     "archiver": "^5.3.1",
@@ -27,6 +29,7 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
+    "mongodb-memory-server": "^10.2.3",
     "nodemon": "^3.0.1"
   }
 }

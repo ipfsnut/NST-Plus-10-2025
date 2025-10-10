@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "scripts": {
     "start": "concurrently \"cd backend && npm start\" \"cd frontend && npm start\"",
-    "install-all": "concurrently \"cd backend && npm install\" \"cd frontend && npm install\""
+    "start:auto": "concurrently \"cd backend && npm run start:auto\" \"cd frontend && npm start\"",
+    "install-all": "concurrently \"cd backend && npm install\" \"cd frontend && npm install\"",
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm start\"",
+    "dev:auto": "concurrently \"cd backend && npm run dev:auto\" \"cd frontend && npm start\""
   },
   "dependencies": {
     "concurrently": "^8.2.2"
