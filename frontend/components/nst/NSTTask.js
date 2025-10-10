@@ -18,11 +18,35 @@ const NSTTask = ({ participantId, onComplete }) => {
   const { captureBothCameras } = useCamera();
   
   const experimentState = useSelector(state => state.experiment);
-  const { isRunning, currentDigit, trialState, sessionData } = experimentState;
+  const { isRunning, currentDigit, trialState, sessionData } = experimentState || {};
   
-  const [taskPhase, setTaskPhase] = useState('instructions'); // instructions, running, complete
+  const [taskPhase, setTaskPhase] = useState('instructions'); // instructions, training, running, complete
+  const [trainingPhase, setTrainingPhase] = useState('ready'); // ready, active, feedback, complete
+  const [trainingTrials, setTrainingTrials] = useState([]);
+  const [currentTrainingTrial, setCurrentTrainingTrial] = useState(0);
+  const [trainingAccuracy, setTrainingAccuracy] = useState(0);
   const [captureQueue, setCaptureQueue] = useState([]);
   const [isProcessingCaptures, setIsProcessingCaptures] = useState(false);
+  const [trainingStartTime, setTrainingStartTime] = useState(null);
+
+  // Keyboard event handling for training
+  useEffect(() => {
+    if (taskPhase !== 'training' || trainingPhase !== 'active') return;
+
+    const handleKeyPress = (e) => {
+      const key = e.key.toLowerCase();
+      if (key === 'f' || key === 'j') {
+        const responseTime = Date.now() - trainingStartTime;
+        handleTrainingResponse(key, responseTime);
+      }
+    };
+
+    // Set start time when trial becomes active
+    setTrainingStartTime(Date.now());
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [taskPhase, trainingPhase, currentTrainingTrial, trainingStartTime]);
 
   // NST Configuration - can be moved to config file later
   const nstConfig = {
@@ -41,7 +65,72 @@ const NSTTask = ({ participantId, onComplete }) => {
   };
 
   /**
-   * Start the NST experiment
+   * Start NST training phase
+   */
+  const startTraining = () => {
+    setTaskPhase('training');
+    setTrainingPhase('active');
+    generateTrainingTrials();
+  };
+
+  /**
+   * Generate training trials with feedback
+   */
+  const generateTrainingTrials = () => {
+    const trials = [];
+    const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+    // Shuffle and take 10 practice digits
+    const shuffled = [...digits].sort(() => Math.random() - 0.5);
+    for (let digit of shuffled) {
+      trials.push({
+        digit,
+        correctAnswer: digit % 2 === 0 ? 'even' : 'odd',
+        userResponse: null,
+        responseTime: null,
+        correct: null
+      });
+    }
+    setTrainingTrials(trials);
+    setCurrentTrainingTrial(0);
+  };
+
+  /**
+   * Handle training trial response
+   */
+  const handleTrainingResponse = (key, responseTime) => {
+    const response = key === 'f' ? 'odd' : 'even';
+    const trial = trainingTrials[currentTrainingTrial];
+    const isCorrect = response === trial.correctAnswer;
+    
+    // Update trial with response
+    const updatedTrials = [...trainingTrials];
+    updatedTrials[currentTrainingTrial] = {
+      ...trial,
+      userResponse: response,
+      responseTime,
+      correct: isCorrect
+    };
+    setTrainingTrials(updatedTrials);
+    
+    // Show feedback
+    setTrainingPhase('feedback');
+    
+    setTimeout(() => {
+      if (currentTrainingTrial < trainingTrials.length - 1) {
+        setCurrentTrainingTrial(prev => prev + 1);
+        setTrainingPhase('active');
+      } else {
+        // Training complete - calculate accuracy
+        const correctCount = updatedTrials.filter(t => t.correct).length;
+        const accuracy = (correctCount / updatedTrials.length) * 100;
+        setTrainingAccuracy(accuracy);
+        setTrainingPhase('complete');
+      }
+    }, 1500);
+  };
+
+  /**
+   * Start the NST experiment after training
    */
   const startNSTExperiment = () => {
     dispatch(startExperiment({
@@ -241,28 +330,121 @@ const NSTTask = ({ participantId, onComplete }) => {
           <div className="nst-instructions">
             <h2>Number Switching Task</h2>
             <div className="instruction-content">
-              <p>You will see numbers appear on the screen one at a time.</p>
-              <p>Identify each number as odd or even using the keys:</p>
+              <p>In this task, you will categorize numbers as odd or even.</p>
+              <p>Numbers will appear one at a time in the center of the screen.</p>
               
               <div className="key-instructions">
-                <div className="key-pair">
-                  <kbd>F</kbd> <span>for ODD numbers</span>
-                </div>
-                <div className="key-pair">
-                  <kbd>J</kbd> <span>for EVEN numbers</span>
+                <h3>Response Keys:</h3>
+                <div className="key-mapping">
+                  <div className="key-pair">
+                    <kbd>F</kbd>
+                    <span className="arrow">←</span>
+                    <span className="category odd">ODD</span>
+                    <span className="examples">(1, 3, 5, 7, 9)</span>
+                  </div>
+                  <div className="key-pair">
+                    <span className="category even">EVEN</span>
+                    <span className="examples">(0, 2, 4, 6, 8)</span>
+                    <span className="arrow">→</span>
+                    <kbd>J</kbd>
+                  </div>
                 </div>
               </div>
               
-              <p>Respond as quickly and accurately as possible.</p>
-              <p>Your camera will capture images during the task.</p>
+              <div className="task-details">
+                <h3>Important:</h3>
+                <ul>
+                  <li>Respond as quickly as possible while staying accurate</li>
+                  <li>Keep your eyes on the center throughout the task</li>
+                  <li>Your facial expressions will be photographed during some responses</li>
+                  <li>Each digit appears for 1.5 seconds</li>
+                </ul>
+              </div>
+              
+              <p className="training-note">
+                We'll start with 10 practice trials with feedback before the main task.
+              </p>
               
               <button 
                 className="start-button"
-                onClick={startNSTExperiment}
+                onClick={startTraining}
               >
-                Start NST Task
+                Start Practice Trials
               </button>
             </div>
+          </div>
+        );
+        
+      case 'training':
+        return (
+          <div className="nst-training">
+            {trainingPhase === 'active' && (
+              <div className="training-active">
+                <h3>Practice Trial {currentTrainingTrial + 1} of 10</h3>
+                <div className="digit-display training">
+                  {trainingTrials[currentTrainingTrial]?.digit}
+                </div>
+                <div className="key-reminder">
+                  <span><kbd>F</kbd> = ODD</span>
+                  <span><kbd>J</kbd> = EVEN</span>
+                </div>
+              </div>
+            )}
+            
+            {trainingPhase === 'feedback' && (
+              <div className="training-feedback">
+                <div className={`feedback-message ${trainingTrials[currentTrainingTrial]?.correct ? 'correct' : 'incorrect'}`}>
+                  {trainingTrials[currentTrainingTrial]?.correct ? (
+                    <>
+                      <span className="feedback-icon">✓</span>
+                      <span>Correct!</span>
+                      <span className="response-time">
+                        Response time: {trainingTrials[currentTrainingTrial]?.responseTime}ms
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="feedback-icon">✗</span>
+                      <span>Incorrect</span>
+                      <span className="correction">
+                        {trainingTrials[currentTrainingTrial]?.digit} is {trainingTrials[currentTrainingTrial]?.correctAnswer}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {trainingPhase === 'complete' && (
+              <div className="training-complete">
+                <h3>Practice Complete!</h3>
+                <div className="training-results">
+                  <p>Accuracy: {trainingAccuracy.toFixed(1)}%</p>
+                  <p>Average response time: {
+                    (trainingTrials.reduce((sum, t) => sum + (t.responseTime || 0), 0) / 
+                     trainingTrials.filter(t => t.responseTime).length).toFixed(0)
+                  }ms</p>
+                </div>
+                
+                {trainingAccuracy >= 80 ? (
+                  <>
+                    <p className="success-message">Great job! You're ready for the main task.</p>
+                    <button className="start-button" onClick={startNSTExperiment}>
+                      Start Main Task
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <p className="retry-message">
+                      Please practice again to achieve at least 80% accuracy.
+                    </p>
+                    <button className="retry-button" onClick={startTraining}>
+                      Retry Practice
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         );
         

@@ -370,12 +370,20 @@ const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) =>
             ) : (
               <div className="training-complete">
                 <h2>Practice Complete!</h2>
-                <p>Ready to begin the main task?</p>
+                <p>You've practiced all three effort levels successfully.</p>
+                <p className="next-step">In the main task, you'll complete 5 trials using dots assigned based on your profile.</p>
+                <div className="assigned-dots">
+                  <strong>Your assigned levels:</strong>
+                  <ul>
+                    <li>Lower effort: {effortLevels[participantGender]?.low || 'Dot 1'}</li>
+                    <li>Higher effort: {effortLevels[participantGender]?.high || 'Dot 2'}</li>
+                  </ul>
+                </div>
                 <div className="training-actions">
                   <button onClick={() => runTrainingSequence()}>
                     Practice Again
                   </button>
-                  <button onClick={startExperiment}>
+                  <button className="primary" onClick={startExperiment}>
                     Start Main Task
                   </button>
                 </div>
