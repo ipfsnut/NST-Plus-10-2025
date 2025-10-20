@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useCamera } from '../common/DualCameraProvider';
 import ConfigScreen from './ConfigScreen';
+import CameraView from '../shared/CameraView';
 import '../../styles/TargetDisplay.css';
+import '../../styles/PhysicalEffort.css';
 
 /**
  * PhysicalEffortTask - Physical effort task using handgrip dynamometer
@@ -398,55 +400,53 @@ const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) =>
         
       case 'experiment':
         return (
-          <div className="target-container">
+          <div className="physical-effort-experiment">
             {restTimer ? (
-              <>
-                <div className="target-display">
-                  <div className="target-element">REST</div>
+              <div className="rest-display">
+                <div className="rest-message">
+                  <h2>REST</h2>
+                  <div className="rest-countdown">{restTimer}s</div>
+                  <p>Relax your hand completely</p>
                 </div>
-                <div className="target-status">
-                  {restTimer}s remaining
-                </div>
-                <div className="target-instructions">
-                  Relax your hand completely
-                </div>
-              </>
+              </div>
             ) : (
-              <>
-                <div className="target-display">
-                  <div className="target-element">
-                    {targetDot}
+              <div className="trial-display">
+                {/* Equipment Camera Feed with Target Overlay */}
+                <div className="equipment-camera-container">
+                  <CameraView 
+                    camera="second" 
+                    visible={true}
+                    className="equipment-camera-feed"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
+                  />
+                  
+                  {/* Target Dot Overlay */}
+                  <div className="dot-target-overlay">
+                    <div className="target-dot-label">
+                      {targetDot}
+                    </div>
+                    <div className="target-instruction">
+                      Squeeze to reach this target
+                    </div>
                   </div>
-                </div>
-                
-                <div className="target-progress">
-                  Trial {currentTrial + 1} of {totalRepetitions * 2}
-                </div>
-                
-                <div className="target-instructions">
-                  Squeeze the dynamometer to reach {targetDot} - Hold steady when you reach the target
-                </div>
-                
-                <div className="equipment-view-overlay">
-                  <p>Look at your dynamometer display</p>
-                  <p>Squeeze to reach {targetDot}</p>
-                </div>
-                
-                {/* Camera positioning guides */}
-                <div className="camera-overlay camera-target-main"></div>
-                <div className="camera-overlay camera-target-equipment"></div>
-                
-                <div className="camera-guidance">
-                  📹 Main camera: faces<br/>
-                  📹 Second camera: equipment
-                </div>
-                
-                {captureTimer && (
-                  <div className="target-status">
-                    Photo in {captureTimer}...
+                  
+                  {/* Trial Progress */}
+                  <div className="trial-progress-overlay">
+                    Trial {currentTrial + 1} of {totalRepetitions * 2}
                   </div>
-                )}
-              </>
+                  
+                  {/* Capture Timer */}
+                  {captureTimer && (
+                    <div className="capture-timer-overlay">
+                      Photo in {captureTimer}...
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         );
@@ -477,18 +477,6 @@ const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) =>
         {renderTaskPhase()}
       </div>
       
-      {/* Development debug info */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="physical-effort-debug">
-          <h4>Debug Info</h4>
-          <p>Phase: {taskPhase}</p>
-          <p>Current Trial: {currentTrial + 1}</p>
-          <p>Target: {targetDot}</p>
-          <p>Captured: {capturedImages.length}</p>
-          <p>Capture Timer: {captureTimer}</p>
-          <p>Rest Timer: {restTimer}</p>
-        </div>
-      )}
     </div>
   );
 };

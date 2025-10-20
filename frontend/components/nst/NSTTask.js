@@ -513,18 +513,6 @@ const NSTTask = ({ participantId, onComplete }) => {
         {renderTaskPhase()}
       </div>
       
-      {/* Debug info for development */}
-      {process.env.NODE_ENV === 'development' && taskPhase === 'running' && (
-        <div className="nst-debug">
-          <h4>Debug Info</h4>
-          <p>Current Digit: {currentDigit}</p>
-          <p>Trial: {trialState.trialNumber}</p>
-          <p>Digit Index: {trialState.digitIndex}</p>
-          <p>Is Running: {isRunning.toString()}</p>
-          <p>Capture Queue: {captureQueue.length}</p>
-          <p>Processing: {isProcessingCaptures.toString()}</p>
-        </div>
-      )}
     </div>
   );
 };

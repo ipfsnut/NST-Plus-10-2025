@@ -5,7 +5,7 @@ import CameraView from '../shared/CameraView';
 /**
  * GlobalCameraSettings - Floating camera configuration accessible from anywhere
  */
-const GlobalCameraSettings = () => {
+const GlobalCameraSettings = ({ hideButton = false }) => {
   // Add pulse animation CSS
   React.useEffect(() => {
     const style = document.createElement('style');
@@ -30,6 +30,11 @@ const GlobalCameraSettings = () => {
   } = useCamera();
 
   if (!isOpen) {
+    // Hide button completely if hideButton is true
+    if (hideButton) {
+      return null;
+    }
+    
     return (
       <button
         className="global-camera-button"

@@ -1,0 +1,152 @@
+/* PhysicalEffort.css - Styles for physical effort task with equipment camera */
+
+.physical-effort-experiment {
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: var(--matrix-black);
+}
+
+.rest-display {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rest-message {
+  text-align: center;
+  color: var(--matrix-green);
+}
+
+.rest-message h2 {
+  font-size: 48px;
+  margin-bottom: 20px;
+  text-shadow: 0 0 20px var(--matrix-green);
+}
+
+.rest-countdown {
+  font-size: 72px;
+  font-weight: bold;
+  margin: 20px 0;
+  text-shadow: 0 0 30px var(--matrix-green);
+}
+
+.trial-display {
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+}
+
+.equipment-camera-container {
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+  overflow: hidden;
+}
+
+.equipment-camera-feed {
+  width: 100%;
+  height: 100%;
+}
+
+/* Target Dot Overlay - Center of screen */
+.dot-target-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.8);
+  border: 3px solid var(--matrix-green);
+  border-radius: 15px;
+  padding: 20px 30px;
+  box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+}
+
+.target-dot-label {
+  font-size: 48px;
+  font-weight: bold;
+  color: var(--matrix-green);
+  text-shadow: 0 0 20px var(--matrix-green);
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+}
+
+.target-instruction {
+  font-size: 18px;
+  color: var(--matrix-green);
+  opacity: 0.9;
+}
+
+/* Trial Progress - Top Left */
+.trial-progress-overlay {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  color: var(--matrix-green);
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 16px;
+  z-index: 10;
+  border: 1px solid var(--matrix-green-dim);
+}
+
+/* Capture Timer - Top Right */
+.capture-timer-overlay {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 0, 0, 0.8);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: bold;
+  z-index: 10;
+  border: 2px solid #ff0000;
+  animation: pulse-red 1s infinite;
+}
+
+@keyframes pulse-red {
+  0% { 
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+  }
+  50% { 
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+  }
+  100% { 
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-height: 600px) {
+  .target-dot-label {
+    font-size: 36px;
+  }
+  
+  .target-instruction {
+    font-size: 14px;
+  }
+  
+  .dot-target-overlay {
+    padding: 15px 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .trial-progress-overlay,
+  .capture-timer-overlay {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+  
+  .target-dot-label {
+    font-size: 40px;
+  }
+}

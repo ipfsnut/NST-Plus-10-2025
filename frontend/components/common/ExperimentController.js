@@ -290,14 +290,20 @@ const ExperimentController = () => {
     }
   };
 
+  // Hide UI elements during active tasks
+  const isActiveTask = currentPhase === 'task' || currentPhase === 'task-2';
+  const currentTask = getCurrentTask();
+  const isNSTOrPhysicalEffort = currentTask === 'nst' || currentTask === 'physical-effort';
+  const shouldHideUI = isActiveTask && isNSTOrPhysicalEffort;
+
   return (
     <DualCameraProvider>
       <div className="experiment-container">
-        {/* Global Camera Settings */}
-        <GlobalCameraSettings />
+        {/* Global Camera Settings - hidden during active NST/Physical Effort tasks */}
+        <GlobalCameraSettings hideButton={shouldHideUI} />
         
-        {/* Progress indicator */}
-        {participant && (
+        {/* Progress indicator - hidden during active NST/Physical Effort tasks */}
+        {participant && !shouldHideUI && (
           <div className="progress-indicator">
             <div className="progress-bar">
               <div 
@@ -318,15 +324,6 @@ const ExperimentController = () => {
           {renderCurrentPhase()}
         </div>
         
-        {/* Debug info (only in development) */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="debug-info">
-            <p>Current Phase: {currentPhase}</p>
-            <p>Current Task: {getCurrentTask() || 'None'}</p>
-            <p>Task Index: {currentTaskIndex}</p>
-            <p>Completed Tasks: {completedTasks.join(', ') || 'None'}</p>
-          </div>
-        )}
       </div>
     </DualCameraProvider>
   );

@@ -147,21 +147,6 @@ const CameraView = ({
         </div>
       )}
       
-      {/* Camera label for development */}
-      {process.env.NODE_ENV === 'development' && (
-        <div style={{
-          position: 'absolute',
-          top: '5px',
-          left: '5px',
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
-          color: 'white',
-          padding: '2px 6px',
-          fontSize: '12px',
-          borderRadius: '3px'
-        }}>
-          {camera.toUpperCase()}
-        </div>
-      )}
     </div>
   );
 };
