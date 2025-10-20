@@ -13,8 +13,11 @@ const MediaHandler = require('./services/mediaHandler');
 const stateManager = require('./services/stateManager');
 
 // MongoDB Connection
-console.log('🔌 Connecting to MongoDB:', process.env.MONGODB_URI);
-mongoose.connect(process.env.MONGODB_URI, {
+const config = require('./config');
+const mongoUri = process.env.MONGODB_URI || config.mongoUri;
+
+console.log('🔌 Connecting to MongoDB:', mongoUri);
+mongoose.connect(mongoUri, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => {
@@ -26,7 +29,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 // Initialize services
 const mongoStore = MongoStore.create({
-  mongoUrl: process.env.MONGODB_URI,
+  mongoUrl: mongoUri,
   collectionName: 'sessions'
 });
 
