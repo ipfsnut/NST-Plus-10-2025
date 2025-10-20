@@ -9,6 +9,7 @@ const NeutralCapture = ({ participantId, onComplete }) => {
   const { 
     captureBothCameras, 
     camerasInitialized,
+    cameras,
     mainVideoRef,
     secondVideoRef 
   } = useCamera();
@@ -34,11 +35,13 @@ const NeutralCapture = ({ participantId, onComplete }) => {
   }, [phase, countdown]);
 
   const startCountdown = () => {
+    // Allow capture even without cameras (will use mock capture)
     if (!camerasInitialized) {
-      setCaptureError('Cameras not ready. Please wait or check camera permissions.');
+      setCaptureError('Cameras not initialized yet. Please wait...');
       return;
     }
     
+    setCaptureError(null);
     setPhase('countdown');
     setCountdown(3);
   };

@@ -4,9 +4,12 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  background: var(--matrix-black);
+  color: var(--matrix-green);
 }
+
 .experiment-wrapper {
-  transition: opacity 0.5s ease-in-out;
+  transition: opacity var(--transition-slow);
 }
 
 .experiment-wrapper.fade {
@@ -15,7 +18,10 @@
 
 .start-screen {
   opacity: 1;
-  transition: opacity 0.5s ease-in-out;
+  transition: opacity var(--transition-slow);
+  background: var(--matrix-black);
+  color: var(--matrix-green);
+  font-family: var(--font-mono);
 }
 
 .start-screen.fade-out {
@@ -28,7 +34,9 @@
   align-items: center;
   justify-content: center;
   height: 100vh;
-  /* Removed transition to make digit changes instant */
+  background: var(--matrix-black);
+  color: var(--matrix-green);
+  font-family: var(--font-mono);
 }
 
 /* Visibility classes for digit display */
@@ -41,12 +49,17 @@
 }
 
 .digit {
-  font-size: 72px;
+  font-size: var(--font-size-8xl);
   font-weight: bold;
+  color: var(--matrix-green-bright);
+  text-shadow: 0 0 20px var(--matrix-green);
 }
+
 .instruction {
-  font-size: 24px;
-  margin-top: 20px;
+  font-size: var(--font-size-2xl);
+  margin-top: var(--space-lg);
+  color: var(--matrix-green);
+  text-align: center;
 }
 
 /* NST Plus Integration Styles */
@@ -57,37 +70,42 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-  padding: 20px;
+  background: var(--matrix-black);
+  padding: var(--space-lg);
 }
 
 .registration-card {
-  background: white;
-  border-radius: 12px;
-  padding: 40px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  background: var(--matrix-gray);
+  border: 2px solid var(--matrix-green);
+  border-radius: var(--radius-xl);
+  padding: var(--space-2xl);
+  box-shadow: var(--shadow-glow);
   max-width: 500px;
   width: 100%;
 }
 
 .registration-title {
   text-align: center;
-  color: #2a5298;
-  margin-bottom: 20px;
-  font-size: 2rem;
+  color: var(--matrix-green-bright);
+  margin-bottom: var(--space-lg);
+  font-size: var(--font-size-3xl);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 .registration-instructions {
   text-align: center;
-  color: #666;
-  margin-bottom: 30px;
+  color: var(--matrix-green);
+  margin-bottom: var(--space-xl);
   line-height: 1.6;
+  font-family: var(--font-mono);
 }
 
 .registration-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-lg);
 }
 
 .form-group {
@@ -97,170 +115,205 @@
 
 .form-label {
   font-weight: bold;
-  margin-bottom: 10px;
-  color: #333;
+  margin-bottom: var(--space-sm);
+  color: var(--matrix-green);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .radio-group {
   display: flex;
-  gap: 20px;
+  gap: var(--space-lg);
   flex-wrap: wrap;
 }
 
 .radio-label {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
   cursor: pointer;
-  padding: 10px;
-  border-radius: 6px;
-  transition: background-color 0.2s;
+  padding: var(--space-sm);
+  border-radius: var(--radius);
+  transition: var(--transition);
+  border: 1px solid var(--matrix-green-dim);
 }
 
 .radio-label:hover {
-  background-color: #f5f5f5;
+  background: var(--matrix-dark-gray);
+  border-color: var(--matrix-green);
 }
 
 .radio-text {
-  font-size: 16px;
-  color: #333;
+  font-size: var(--font-size-base);
+  color: var(--matrix-green);
+  font-family: var(--font-mono);
 }
 
 .form-input {
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 16px;
+  background: var(--matrix-dark-gray);
+  border: 1px solid var(--matrix-green-dim);
+  color: var(--matrix-green);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-base);
+  transition: var(--transition);
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #2a5298;
-  box-shadow: 0 0 0 2px rgba(42, 82, 152, 0.2);
+  border-color: var(--matrix-green);
+  box-shadow: 0 0 0 2px rgba(0, 255, 0, 0.2);
+}
+
+.form-input::placeholder {
+  color: var(--matrix-green-dim);
 }
 
 .submit-button {
-  background: #2a5298;
-  color: white;
+  background: var(--matrix-green);
+  color: var(--matrix-black);
   border: none;
-  padding: 15px;
-  border-radius: 6px;
-  font-size: 16px;
+  padding: var(--space-md);
+  border-radius: var(--radius);
+  font-size: var(--font-size-base);
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: var(--transition);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .submit-button:hover:not(:disabled) {
-  background: #1e3c72;
+  background: var(--matrix-green-bright);
+  box-shadow: var(--shadow-glow);
 }
 
 .submit-button:disabled {
-  background: #ccc;
+  background: var(--matrix-light-gray);
+  color: var(--matrix-green-dim);
   cursor: not-allowed;
 }
 
 .error-message {
-  color: #dc3545;
-  font-size: 14px;
-  margin-top: 5px;
+  color: var(--matrix-red);
+  font-size: var(--font-size-sm);
+  margin-top: var(--space-xs);
+  font-family: var(--font-mono);
 }
 
 .submit-error {
   text-align: center;
-  margin-top: 10px;
+  margin-top: var(--space-sm);
 }
 
 .privacy-notice {
-  margin-top: 20px;
+  margin-top: var(--space-lg);
   text-align: center;
-  font-size: 12px;
-  color: #888;
+  font-size: var(--font-size-xs);
+  color: var(--matrix-green-dim);
+  font-family: var(--font-mono);
 }
 
 /* Tutorial Styles */
 .tutorial-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 40px 20px;
+  background: var(--matrix-black);
+  color: var(--matrix-green);
+  padding: var(--space-2xl) var(--space-lg);
+  font-family: var(--font-mono);
 }
 
 .tutorial-header {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: var(--space-2xl);
 }
 
 .tutorial-title {
-  font-size: 2.5rem;
-  margin-bottom: 10px;
+  font-size: var(--font-size-5xl);
+  margin-bottom: var(--space-sm);
+  color: var(--matrix-green-bright);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 .tutorial-progress {
-  font-size: 1.1rem;
+  font-size: var(--font-size-lg);
   opacity: 0.8;
+  color: var(--matrix-green);
 }
 
 .tutorial-content {
   max-width: 800px;
-  margin: 0 auto 40px;
+  margin: 0 auto var(--space-2xl);
 }
 
 .tutorial-step {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 30px;
-  backdrop-filter: blur(10px);
+  background: var(--matrix-gray);
+  border: 1px solid var(--matrix-green);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-glow);
 }
 
 .step-title {
-  font-size: 1.8rem;
-  margin-bottom: 20px;
-  color: #fff;
+  font-size: var(--font-size-3xl);
+  margin-bottom: var(--space-lg);
+  color: var(--matrix-green-bright);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .step-content {
-  font-size: 1.1rem;
+  font-size: var(--font-size-lg);
   line-height: 1.6;
+  color: var(--matrix-green);
 }
 
 .key-instructions {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  margin: 20px 0;
+  gap: var(--space-md);
+  margin: var(--space-lg) 0;
 }
 
 .key-pair {
   display: flex;
   align-items: center;
-  gap: 15px;
-  font-size: 1.2rem;
+  gap: var(--space-md);
+  font-size: var(--font-size-xl);
+  color: var(--matrix-green);
 }
 
 .key-pair kbd {
-  background: #333;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 1.4rem;
+  background: var(--matrix-green);
+  color: var(--matrix-black);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius);
+  font-size: var(--font-size-xl);
   font-weight: bold;
   min-width: 40px;
   text-align: center;
+  font-family: var(--font-mono);
+  border: 1px solid var(--matrix-green-bright);
 }
 
 .effort-levels {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  margin: 20px 0;
+  gap: var(--space-md);
+  margin: var(--space-lg) 0;
 }
 
 .effort-level {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 15px;
-  border-radius: 8px;
-  border-left: 4px solid #fff;
+  background: var(--matrix-dark-gray);
+  padding: var(--space-md);
+  border-radius: var(--radius-lg);
+  border-left: 4px solid var(--matrix-green);
+  border: 1px solid var(--matrix-green-dim);
+  color: var(--matrix-green);
 }
 
 .tutorial-navigation {
@@ -272,57 +325,68 @@
 }
 
 .nav-button {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 2px solid white;
-  padding: 12px 24px;
-  border-radius: 6px;
-  font-size: 16px;
+  background: transparent;
+  color: var(--matrix-green);
+  border: 1px solid var(--matrix-green);
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius);
+  font-size: var(--font-size-base);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition);
 }
 
 .nav-button:hover:not(:disabled) {
-  background: white;
-  color: #667eea;
+  background: var(--matrix-green);
+  color: var(--matrix-black);
+  box-shadow: var(--shadow-glow);
 }
 
 .nav-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  border-color: var(--matrix-green-dim);
+  color: var(--matrix-green-dim);
 }
 
 .step-indicators {
   display: flex;
-  gap: 10px;
+  gap: var(--space-sm);
 }
 
 .step-indicator {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--matrix-green-dim);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition);
+  border: 1px solid var(--matrix-green-dim);
 }
 
 .step-indicator.active {
-  background: white;
+  background: var(--matrix-green);
   transform: scale(1.2);
+  box-shadow: 0 0 10px var(--matrix-green);
 }
 
 .step-indicator.completed {
-  background: #4caf50;
+  background: var(--matrix-green-bright);
+  border-color: var(--matrix-green-bright);
 }
 
 .tutorial-actions {
   text-align: center;
-  margin-top: 20px;
+  margin-top: var(--space-lg);
 }
 
 .ready-message {
-  font-size: 1.1rem;
+  font-size: var(--font-size-lg);
   opacity: 0.9;
+  color: var(--matrix-green);
+  font-family: var(--font-mono);
 }
 
 /* Progress Indicator */
@@ -332,17 +396,19 @@
   left: 0;
   right: 0;
   z-index: 1000;
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 10px;
+  background: var(--matrix-black);
+  color: var(--matrix-green);
+  padding: var(--space-sm);
+  border-bottom: 1px solid var(--matrix-green);
+  font-family: var(--font-mono);
 }
 
 .progress-bar {
   height: 4px;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 2px;
+  background: var(--matrix-green-dim);
+  border-radius: var(--radius-sm);
   overflow: hidden;
-  margin-bottom: 5px;
+  margin-bottom: var(--space-xs);
 }
 
 .progress-fill {

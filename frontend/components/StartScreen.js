@@ -47,15 +47,41 @@ const StartScreen = () => {
     }
   };
 
+  const captureError = useSelector(state => state.capture.error);
+
   return (
     <div className="start-screen">
       <h1>Number Switching Task</h1>
       {getInstructions()}
-      {deviceStatus === 'ready' && (
-        <div className="camera-status">Camera Ready ✓</div>
-      )}
-      <div className="start-instruction">
-        Press 'f' or 'j' to begin
+      
+      {/* Camera Status Display */}
+      <div className="matrix-status-container matrix-mt-lg">
+        {deviceStatus === 'ready' ? (
+          <div className="matrix-status matrix-status-ready">
+            <span className="matrix-status-dot"></span>
+            Camera Ready
+          </div>
+        ) : (
+          <div className="matrix-status matrix-status-warning">
+            <span className="matrix-status-dot"></span>
+            No Camera Mode
+          </div>
+        )}
+        
+        {captureError && (
+          <div className="matrix-text-sm matrix-text-yellow matrix-mt-sm matrix-text-center">
+            {captureError}
+          </div>
+        )}
+      </div>
+      
+      <div className="start-instruction matrix-mt-lg">
+        <div className="matrix-text-lg matrix-text-bright">Press 'f' or 'j' to begin</div>
+        <div className="matrix-text-sm matrix-text-dim matrix-mt-sm">
+          {deviceStatus === 'ready' 
+            ? 'Experiment will capture images during trials' 
+            : 'Experiment will run without video capture'}
+        </div>
       </div>
     </div>
   );

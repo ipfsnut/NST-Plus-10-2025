@@ -62,7 +62,7 @@ const nstRoutes = require('./routes/NSTRoutes');
 const participantRoutes = require('./routes/participantRoutes');
 
 app.use('/api', nstRoutes);
-app.use('/api', participantRoutes);
+app.use('/api/participants', participantRoutes);
 
 app.use((err, req, res, next) => {
   console.error('Error details:', err);

@@ -60,6 +60,15 @@ export const DualCameraProvider = ({ children }) => {
    */
   const initializeCameraDevices = async () => {
     try {
+      // Check if getUserMedia is available
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.warn('getUserMedia not supported - running in no-camera mode');
+        setCameras([]);
+        setCamerasInitialized(true);
+        dispatch(setCameraReady(false));
+        return;
+      }
+
       // Request permission first with a temporary stream
       const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
       
@@ -72,14 +81,31 @@ export const DualCameraProvider = ({ children }) => {
       
       setCameras(videoDevices);
       setCamerasInitialized(true);
-      dispatch(setCameraReady(true));
+      dispatch(setCameraReady(videoDevices.length > 0));
       
       console.log(`Found ${videoDevices.length} camera devices:`, videoDevices);
       
+      if (videoDevices.length === 0) {
+        console.warn('No camera devices found - experiment will run without cameras');
+        dispatch(setCaptureError('No cameras detected. Experiment will run without video capture.'));
+      }
+      
     } catch (err) {
-      console.error('Error initializing camera devices:', err);
-      dispatch(setCaptureError('Failed to initialize cameras: ' + err.message));
-      setCamerasInitialized(false);
+      console.warn('Camera initialization failed - running in no-camera mode:', err.message);
+      
+      // Set cameras as initialized but empty - don't block the app
+      setCameras([]);
+      setCamerasInitialized(true);
+      dispatch(setCameraReady(false));
+      
+      // Provide user-friendly error message
+      const errorMessage = err.name === 'NotAllowedError' 
+        ? 'Camera permission denied. Experiment will run without video capture.'
+        : err.name === 'NotFoundError'
+        ? 'No cameras found. Experiment will run without video capture.'
+        : `Camera unavailable (${err.message}). Experiment will run without video capture.`;
+        
+      dispatch(setCaptureError(errorMessage));
     }
   };
 
@@ -259,9 +285,68 @@ export const DualCameraProvider = ({ children }) => {
   };
 
   /**
+   * Create a mock photo blob for testing without cameras
+   */
+  const createMockPhoto = (label, width = 640, height = 480) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    
+    // Create a simple pattern with timestamp and label
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillRect(0, 0, width, height);
+    
+    ctx.strokeStyle = '#00ff00';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(10, 10, width - 20, height - 20);
+    
+    ctx.fillStyle = '#00ff00';
+    ctx.font = '20px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`MOCK CAMERA: ${label.toUpperCase()}`, width / 2, height / 2 - 20);
+    ctx.fillText(new Date().toISOString(), width / 2, height / 2 + 20);
+    
+    return new Promise((resolve) => {
+      canvas.toBlob(resolve, 'image/jpeg', 0.8);
+    });
+  };
+
+  /**
    * Capture photos from both cameras simultaneously
    */
   const captureBothCameras = async (mainLabel = 'main', secondLabel = 'second') => {
+    console.log(`Capturing photos: ${cameras.length} camera(s) available`);
+    
+    // If no cameras are available, create mock photos for testing
+    if (cameras.length === 0) {
+      console.warn('No cameras available - creating mock photos for testing');
+      const results = await Promise.all([
+        createMockPhoto(mainLabel),
+        createMockPhoto(secondLabel)
+      ]);
+      
+      return {
+        main: results[0],
+        second: results[1]
+      };
+    }
+
+    // Handle single camera scenario - capture from main, mock for second
+    if (cameras.length === 1 && selectedMainCamera && !selectedSecondCamera) {
+      console.log('Single camera mode - capturing main, mocking second');
+      const results = await Promise.all([
+        capturePhoto(mainVideoRef, mainCanvasRef, mainLabel),
+        createMockPhoto(`${secondLabel}_mock`)
+      ]);
+      
+      return {
+        main: results[0],
+        second: results[1]
+      };
+    }
+
+    // Normal dual camera capture
     const results = await Promise.all([
       capturePhoto(mainVideoRef, mainCanvasRef, mainLabel),
       capturePhoto(secondVideoRef, secondCanvasRef, secondLabel)
@@ -297,13 +382,21 @@ export const DualCameraProvider = ({ children }) => {
     
     // Auto-select main camera (usually built-in/first camera)
     if (!selectedMainCamera && !savedMain && cameras.length > 0) {
+      console.log('Auto-selecting main camera:', cameras[0].label || cameras[0].deviceId);
       setSelectedMainCamera(cameras[0].deviceId);
     }
     
-    // Auto-select second camera if available (usually external/USB)
+    // Only auto-select second camera if we have multiple cameras
     if (!selectedSecondCamera && !savedSecond && cameras.length > 1) {
+      console.log('Auto-selecting second camera:', cameras[1].label || cameras[1].deviceId);
       setSelectedSecondCamera(cameras[1].deviceId);
     }
+    
+    // Log camera setup for debugging
+    console.log(`Camera setup: ${cameras.length} camera(s) available`);
+    cameras.forEach((camera, index) => {
+      console.log(`  Camera ${index + 1}: ${camera.label || camera.deviceId}`);
+    });
   }, [cameras, camerasInitialized]);
 
   const value = {

@@ -23,12 +23,29 @@ export const enumerateCameras = async () => {
 
 export const checkCameraAvailability = async (dispatch) => {
   try {
+    // Check if getUserMedia is available
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      console.warn('getUserMedia not supported - running in no-camera mode');
+      dispatch(setCameraReady(false));
+      dispatch(setCaptureError('Camera not supported in this environment. Experiment will run without video capture.'));
+      return false;
+    }
+
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     stream.getTracks().forEach(track => track.stop());
     dispatch(setCameraReady(true));
     return true;
   } catch (error) {
-    dispatch(setCaptureError('Camera not available'));
+    console.warn('Camera availability check failed:', error.message);
+    
+    const errorMessage = error.name === 'NotAllowedError' 
+      ? 'Camera permission denied. Experiment will run without video capture.'
+      : error.name === 'NotFoundError'
+      ? 'No cameras found. Experiment will run without video capture.'
+      : 'Camera not available. Experiment will run without video capture.';
+      
+    dispatch(setCaptureError(errorMessage));
+    dispatch(setCameraReady(false));
     return false;
   }
 };

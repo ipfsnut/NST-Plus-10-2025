@@ -58,6 +58,7 @@ router.post('/register', asyncHandler(async (req, res) => {
       gender,
       age: ageNum,
       taskOrder,
+      dataDirectory: `data/${participantId}`,
       metadata: {
         browserInfo: req.headers['user-agent'],
         sessionId: req.sessionID
