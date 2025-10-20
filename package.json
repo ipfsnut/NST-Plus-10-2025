@@ -2,11 +2,14 @@
   "name": "nst-vanilla",
   "version": "1.0.0",
   "scripts": {
-    "start": "concurrently \"cd backend && npm start\" \"cd frontend && npm start\"",
-    "start:auto": "concurrently \"cd backend && npm run start:auto\" \"cd frontend && npm start\"",
+    "prestart": "npm run install-all",
+    "start": "concurrently \"brew services start mongodb-community\" \"cd backend && npm start\" \"cd frontend && npm start\"",
+    "start:auto": "concurrently \"brew services start mongodb-community\" \"cd backend && npm run start:auto\" \"cd frontend && npm start\"",
     "install-all": "concurrently \"cd backend && npm install\" \"cd frontend && npm install\"",
-    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm start\"",
-    "dev:auto": "concurrently \"cd backend && npm run dev:auto\" \"cd frontend && npm start\""
+    "dev": "concurrently \"brew services start mongodb-community\" \"cd backend && npm run dev\" \"cd frontend && npm start\"",
+    "dev:auto": "concurrently \"brew services start mongodb-community\" \"cd backend && npm run dev:auto\" \"cd frontend && npm start\"",
+    "setup": "npm install && npm run install-all",
+    "stop": "brew services stop mongodb-community"
   },
   "dependencies": {
     "concurrently": "^8.2.2"
