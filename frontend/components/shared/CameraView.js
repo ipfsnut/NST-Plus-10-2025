@@ -13,41 +13,61 @@ const CameraView = ({
   showOverlay = false,
   overlayContent = null
 }) => {
-  const { mainStreamRef, secondStreamRef } = useCamera();
-  const videoRef = useRef(null);
+  const { 
+    mainVideoRef, 
+    secondVideoRef, 
+    mainStreamRef, 
+    secondStreamRef,
+    selectedMainCamera,
+    selectedSecondCamera
+  } = useCamera();
   
-  // Get the appropriate stream based on camera prop
+  // Get the appropriate refs based on camera prop
+  const sourceVideoRef = camera === 'main' ? mainVideoRef : secondVideoRef;
   const streamRef = camera === 'main' ? mainStreamRef : secondStreamRef;
+  const selectedCamera = camera === 'main' ? selectedMainCamera : selectedSecondCamera;
   
+  const localVideoRef = useRef(null);
+  
+  // Clone the stream from the source video to our local video element
   useEffect(() => {
-    if (videoRef.current && streamRef.current) {
-      videoRef.current.srcObject = streamRef.current;
+    if (!localVideoRef.current || !sourceVideoRef?.current) return;
+    
+    const sourceVideo = sourceVideoRef.current;
+    const localVideo = localVideoRef.current;
+    
+    // Copy the stream if available
+    if (sourceVideo.srcObject && selectedCamera) {
+      localVideo.srcObject = sourceVideo.srcObject;
+      localVideo.play().catch(err => {
+        console.warn(`Failed to play ${camera} video:`, err);
+      });
+    } else {
+      localVideo.srcObject = null;
     }
-  }, [streamRef.current]);
+  }, [selectedCamera, streamRef?.current, sourceVideoRef]);
   
-  // Update stream when it changes
+  // Monitor for stream changes
   useEffect(() => {
-    const updateStream = () => {
-      if (videoRef.current && streamRef.current) {
-        videoRef.current.srcObject = streamRef.current;
-        videoRef.current.play().catch(err => {
-          console.warn('Failed to play video:', err);
-        });
+    if (!sourceVideoRef?.current || !localVideoRef.current) return;
+    
+    const checkForUpdates = () => {
+      const sourceVideo = sourceVideoRef.current;
+      const localVideo = localVideoRef.current;
+      
+      if (sourceVideo?.srcObject && selectedCamera) {
+        if (localVideo.srcObject !== sourceVideo.srcObject) {
+          localVideo.srcObject = sourceVideo.srcObject;
+          localVideo.play().catch(err => {
+            console.warn(`Failed to update ${camera} video:`, err);
+          });
+        }
       }
     };
     
-    // Initial setup
-    updateStream();
-    
-    // Listen for stream changes (this is a simple approach)
-    const interval = setInterval(() => {
-      if (videoRef.current && videoRef.current.srcObject !== streamRef.current) {
-        updateStream();
-      }
-    }, 1000);
-    
+    const interval = setInterval(checkForUpdates, 500);
     return () => clearInterval(interval);
-  }, [streamRef]);
+  }, [selectedCamera, camera, sourceVideoRef]);
   
   if (!visible) {
     return null;
@@ -63,7 +83,7 @@ const CameraView = ({
   return (
     <div className={`camera-view ${className}`} style={{ position: 'relative' }}>
       <video
-        ref={videoRef}
+        ref={localVideoRef}
         autoPlay
         playsInline
         muted
@@ -78,6 +98,26 @@ const CameraView = ({
           console.error(`${camera} camera view error:`, e);
         }}
       />
+      
+      {/* Show placeholder when no camera selected */}
+      {!selectedCamera && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: '#1a1a1a',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#00ff00',
+          fontSize: '14px',
+          border: '2px dashed #333'
+        }}>
+          Select {camera === 'main' ? 'main' : 'equipment'} camera
+        </div>
+      )}
       
       {/* Optional overlay content */}
       {showOverlay && (
