@@ -432,6 +432,15 @@ const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) =>
                   <p>Squeeze to reach {targetDot}</p>
                 </div>
                 
+                {/* Camera positioning guides */}
+                <div className="camera-overlay camera-target-main"></div>
+                <div className="camera-overlay camera-target-equipment"></div>
+                
+                <div className="camera-guidance">
+                  📹 Main camera: faces<br/>
+                  📹 Second camera: equipment
+                </div>
+                
                 {captureTimer && (
                   <div className="target-status">
                     Photo in {captureTimer}...

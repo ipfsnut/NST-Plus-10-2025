@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import { useSelector } from 'react-redux';
+import '../styles/TargetDisplay.css';
 
 const DigitDisplay = memo(() => {
   const { currentDigit, phase } = useSelector(state => state.experiment.trialState);
@@ -23,13 +24,17 @@ const DigitDisplay = memo(() => {
   };
 
   return (
-    <div className="digit-display">
+    <div className="target-container">
       {!displayBlank ? (
         <>
-          <div className="digit">{currentDigit}</div>
-          <div className="instruction">{getInstructionText()}</div>
+          <div className="target-display">
+            <div className="target-element">{currentDigit}</div>
+          </div>
+          
+          <div className="target-instructions">{getInstructionText()}</div>
+          
           {phase === 'awaiting-response' && (
-            <div className="response-indicator">Awaiting Response...</div>
+            <div className="target-status">Awaiting Response...</div>
           )}
         </>
       ) : (
