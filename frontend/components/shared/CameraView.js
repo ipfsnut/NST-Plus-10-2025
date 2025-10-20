@@ -31,18 +31,30 @@ const CameraView = ({
   
   // Clone the stream from the source video to our local video element
   useEffect(() => {
-    if (!localVideoRef.current || !sourceVideoRef?.current) return;
+    console.log(`CameraView ${camera} effect triggered:`, {
+      hasLocalRef: !!localVideoRef.current,
+      hasSourceRef: !!sourceVideoRef?.current,
+      selectedCamera,
+      hasStream: !!streamRef?.current
+    });
+    
+    if (!localVideoRef.current || !sourceVideoRef?.current) {
+      console.log(`CameraView ${camera}: Missing refs`);
+      return;
+    }
     
     const sourceVideo = sourceVideoRef.current;
     const localVideo = localVideoRef.current;
     
     // Copy the stream if available
     if (sourceVideo.srcObject && selectedCamera) {
+      console.log(`CameraView ${camera}: Setting stream from source`);
       localVideo.srcObject = sourceVideo.srcObject;
       localVideo.play().catch(err => {
         console.warn(`Failed to play ${camera} video:`, err);
       });
     } else {
+      console.log(`CameraView ${camera}: No stream or camera selected`);
       localVideo.srcObject = null;
     }
   }, [selectedCamera, streamRef?.current, sourceVideoRef]);

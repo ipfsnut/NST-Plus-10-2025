@@ -6,6 +6,7 @@ import NSTTask from '../nst/NSTTask';
 import PhysicalEffortTask from '../physical-effort/PhysicalEffortTask';
 import Tutorial from './Tutorial';
 import { DualCameraProvider } from './DualCameraProvider';
+import GlobalCameraSettings from './GlobalCameraSettings';
 
 /**
  * ExperimentController - Main orchestrator for the NST Plus experiment
@@ -292,6 +293,9 @@ const ExperimentController = () => {
   return (
     <DualCameraProvider>
       <div className="experiment-container">
+        {/* Global Camera Settings */}
+        <GlobalCameraSettings />
+        
         {/* Progress indicator */}
         {participant && (
           <div className="progress-indicator">
