@@ -6,6 +6,19 @@ import CameraView from '../shared/CameraView';
  * GlobalCameraSettings - Floating camera configuration accessible from anywhere
  */
 const GlobalCameraSettings = () => {
+  // Add pulse animation CSS
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
   const [isOpen, setIsOpen] = useState(false);
   const { 
     cameras, 
@@ -33,8 +46,9 @@ const GlobalCameraSettings = () => {
           height: '50px',
           fontSize: '18px',
           cursor: 'pointer',
-          zIndex: 1000,
-          boxShadow: '0 0 10px rgba(0, 255, 0, 0.5)'
+          zIndex: 9999,
+          boxShadow: '0 0 15px rgba(0, 255, 0, 0.8)',
+          animation: 'pulse 2s infinite'
         }}
         title="Camera Settings"
       >

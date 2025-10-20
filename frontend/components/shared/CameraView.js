@@ -15,71 +15,63 @@ const CameraView = ({
 }) => {
   const { 
     mainVideoRef, 
-    secondVideoRef, 
-    mainStreamRef, 
-    secondStreamRef,
+    secondVideoRef,
     selectedMainCamera,
     selectedSecondCamera
   } = useCamera();
   
-  // Get the appropriate refs based on camera prop
+  // Get the appropriate source video ref
   const sourceVideoRef = camera === 'main' ? mainVideoRef : secondVideoRef;
-  const streamRef = camera === 'main' ? mainStreamRef : secondStreamRef;
   const selectedCamera = camera === 'main' ? selectedMainCamera : selectedSecondCamera;
   
+  // Create local video ref for our preview
   const localVideoRef = useRef(null);
   
-  // Clone the stream from the source video to our local video element
+  // Direct stream access - much simpler approach
   useEffect(() => {
-    console.log(`CameraView ${camera} effect triggered:`, {
-      hasLocalRef: !!localVideoRef.current,
-      hasSourceRef: !!sourceVideoRef?.current,
-      selectedCamera,
-      hasStream: !!streamRef?.current
-    });
+    console.log(`CameraView ${camera}: Attempting to show stream, camera selected:`, selectedCamera);
     
-    if (!localVideoRef.current || !sourceVideoRef?.current) {
-      console.log(`CameraView ${camera}: Missing refs`);
+    if (!sourceVideoRef?.current || !localVideoRef.current) {
+      console.log(`CameraView ${camera}: Missing video elements`);
       return;
     }
     
     const sourceVideo = sourceVideoRef.current;
     const localVideo = localVideoRef.current;
     
-    // Copy the stream if available
-    if (sourceVideo.srcObject && selectedCamera) {
-      console.log(`CameraView ${camera}: Setting stream from source`);
-      localVideo.srcObject = sourceVideo.srcObject;
-      localVideo.play().catch(err => {
-        console.warn(`Failed to play ${camera} video:`, err);
-      });
-    } else {
-      console.log(`CameraView ${camera}: No stream or camera selected`);
-      localVideo.srcObject = null;
-    }
-  }, [selectedCamera, streamRef?.current, sourceVideoRef]);
-  
-  // Monitor for stream changes
-  useEffect(() => {
-    if (!sourceVideoRef?.current || !localVideoRef.current) return;
-    
-    const checkForUpdates = () => {
-      const sourceVideo = sourceVideoRef.current;
-      const localVideo = localVideoRef.current;
-      
-      if (sourceVideo?.srcObject && selectedCamera) {
-        if (localVideo.srcObject !== sourceVideo.srcObject) {
-          localVideo.srcObject = sourceVideo.srcObject;
-          localVideo.play().catch(err => {
-            console.warn(`Failed to update ${camera} video:`, err);
-          });
-        }
+    // Function to copy stream
+    const updateLocalVideo = () => {
+      if (sourceVideo.srcObject && selectedCamera) {
+        console.log(`CameraView ${camera}: Copying stream to preview`);
+        localVideo.srcObject = sourceVideo.srcObject;
+        localVideo.play().catch(err => {
+          console.warn(`CameraView ${camera}: Play failed:`, err);
+        });
+      } else {
+        console.log(`CameraView ${camera}: No stream to copy`);
+        localVideo.srcObject = null;
       }
     };
     
-    const interval = setInterval(checkForUpdates, 500);
-    return () => clearInterval(interval);
-  }, [selectedCamera, camera, sourceVideoRef]);
+    // Initial update
+    updateLocalVideo();
+    
+    // Listen for stream changes on source video
+    const handleLoadedMetadata = () => {
+      console.log(`CameraView ${camera}: Source video metadata loaded, updating preview`);
+      updateLocalVideo();
+    };
+    
+    sourceVideo.addEventListener('loadedmetadata', handleLoadedMetadata);
+    
+    // Periodic check for stream changes
+    const checkInterval = setInterval(updateLocalVideo, 1000);
+    
+    return () => {
+      sourceVideo.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      clearInterval(checkInterval);
+    };
+  }, [selectedCamera, sourceVideoRef, camera]);
   
   if (!visible) {
     return null;
