@@ -1,5 +1,7 @@
 # NST-Vanilla: Number Switching Task Experiment Platform
 
+# npm run start:auto
+
 A lightweight experimental platform for running the Number Switching Task (NST), built with React and Node.js.
 
 ## Purpose
