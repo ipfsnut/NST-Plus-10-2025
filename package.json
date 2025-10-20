@@ -2,14 +2,18 @@
   "name": "nst-vanilla",
   "version": "1.0.0",
   "scripts": {
-    "prestart": "npm run install-all",
-    "start": "concurrently \"brew services start mongodb-community\" \"cd backend && npm start\" \"cd frontend && npm start\"",
-    "start:auto": "concurrently \"brew services start mongodb-community\" \"cd backend && npm run start:auto\" \"cd frontend && npm start\"",
+    "prestart": "npm run install-all && npm run start-db",
+    "start": "concurrently \"cd backend && npm start\" \"cd frontend && npm start\"",
+    "start:auto": "concurrently \"cd backend && npm run start:auto\" \"cd frontend && npm start\"",
     "install-all": "concurrently \"cd backend && npm install\" \"cd frontend && npm install\"",
-    "dev": "concurrently \"brew services start mongodb-community\" \"cd backend && npm run dev\" \"cd frontend && npm start\"",
-    "dev:auto": "concurrently \"brew services start mongodb-community\" \"cd backend && npm run dev:auto\" \"cd frontend && npm start\"",
+    "dev": "npm run start-db && concurrently \"cd backend && npm run dev\" \"cd frontend && npm start\"",
+    "dev:auto": "npm run start-db && concurrently \"cd backend && npm run dev:auto\" \"cd frontend && npm start\"",
     "setup": "npm install && npm run install-all",
-    "stop": "brew services stop mongodb-community"
+    "start-db": "npm run start-db-docker || npm run start-db-brew",
+    "start-db-docker": "docker run -d -p 27017:27017 --name nst-mongodb mongo:latest || docker start nst-mongodb",
+    "start-db-brew": "brew services start mongodb-community",
+    "stop-db": "docker stop nst-mongodb 2>/dev/null || brew services stop mongodb-community",
+    "stop": "npm run stop-db"
   },
   "dependencies": {
     "concurrently": "^8.2.2"
