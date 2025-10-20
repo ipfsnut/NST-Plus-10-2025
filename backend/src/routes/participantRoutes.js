@@ -103,10 +103,7 @@ router.post('/register', asyncHandler(async (req, res) => {
  * Save neutral capture photos and metadata
  */
 router.post('/neutral-capture', 
-  upload.fields([
-    { name: 'mainPhoto', maxCount: 1 },
-    { name: 'equipmentPhoto', maxCount: 1 }
-  ]),
+  upload.any(), // Accept any field names for multiple files
   asyncHandler(async (req, res) => {
     const { participantId, timestamp } = req.body;
     
@@ -122,28 +119,46 @@ router.post('/neutral-capture',
     
     const captureData = {
       timestamp: timestamp || new Date().toISOString(),
-      files: {}
+      files: {
+        main: [],
+        equipment: []
+      },
+      totalCaptures: parseInt(req.body.totalCaptures) || 0
     };
     
-    // Save uploaded files
-    if (req.files.mainPhoto) {
-      const mainPath = await saveFile(
-        participantId, 
-        'neutral', 
-        'neutral-main.jpg', 
-        req.files.mainPhoto[0].buffer
-      );
-      captureData.files.main = mainPath;
-    }
-    
-    if (req.files.equipmentPhoto) {
-      const equipmentPath = await saveFile(
-        participantId, 
-        'neutral', 
-        'neutral-equipment.jpg', 
-        req.files.equipmentPhoto[0].buffer
-      );
-      captureData.files.equipment = equipmentPath;
+    // Process all uploaded files
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        if (file.fieldname.startsWith('mainPhoto_')) {
+          const index = file.fieldname.split('_')[1];
+          const mainPath = await saveFile(
+            participantId, 
+            'neutral', 
+            `neutral-main-${index}.jpg`, 
+            file.buffer
+          );
+          captureData.files.main.push({
+            index: parseInt(index),
+            filename: `neutral-main-${index}.jpg`,
+            path: mainPath,
+            size: file.size
+          });
+        } else if (file.fieldname.startsWith('equipmentPhoto_')) {
+          const index = file.fieldname.split('_')[1];
+          const equipmentPath = await saveFile(
+            participantId, 
+            'neutral', 
+            `neutral-equipment-${index}.jpg`, 
+            file.buffer
+          );
+          captureData.files.equipment.push({
+            index: parseInt(index),
+            filename: `neutral-equipment-${index}.jpg`,
+            path: equipmentPath,
+            size: file.size
+          });
+        }
+      }
     }
     
     // Update participant record
@@ -151,7 +166,9 @@ router.post('/neutral-capture',
     
     logger.info(`Neutral capture saved for ${participantId}`, {
       participantId,
-      filesCount: Object.keys(captureData.files).length
+      mainPhotos: captureData.files.main.length,
+      equipmentPhotos: captureData.files.equipment.length,
+      totalCaptures: captureData.totalCaptures
     });
     
     res.json({

@@ -234,30 +234,47 @@ export const DualCameraProvider = ({ children }) => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     
-    // Wait for video to be ready
+    // Wait for video to be ready with better error handling
     if (video.readyState < 2) {
       console.log(`Waiting for video ready state: ${label}`);
       await new Promise((resolve) => {
-        const handleLoad = () => resolve();
+        const handleLoad = () => {
+          console.log(`Video loaded for ${label}:`, {
+            readyState: video.readyState,
+            videoWidth: video.videoWidth,
+            videoHeight: video.videoHeight
+          });
+          resolve();
+        };
         video.addEventListener('loadeddata', handleLoad, { once: true });
-        // Timeout after 2 seconds
+        video.addEventListener('loadedmetadata', handleLoad, { once: true });
+        // Timeout after 3 seconds
         setTimeout(() => {
           video.removeEventListener('loadeddata', handleLoad);
+          video.removeEventListener('loadedmetadata', handleLoad);
+          console.warn(`Video load timeout for ${label}, proceeding anyway`);
           resolve();
-        }, 2000);
+        }, 3000);
       });
     }
     
-    // Verify video has valid dimensions
+    // Check video dimensions and try to get them
     if (!video.videoWidth || !video.videoHeight) {
-      console.error(`Video has no dimensions: ${label}`);
-      return null;
+      // Try waiting a bit more for dimensions
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      if (!video.videoWidth || !video.videoHeight) {
+        console.warn(`Video has no dimensions for ${label}, using default size`);
+        // Don't return null, use default dimensions
+      }
     }
     
     try {
-      // Set canvas dimensions to match video
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      // Set canvas dimensions to match video or use defaults
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      
+      console.log(`Canvas dimensions for ${label}: ${canvas.width}x${canvas.height}`);
       
       const context = canvas.getContext('2d');
       

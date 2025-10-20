@@ -140,7 +140,7 @@ const NeutralCapture = ({ participantId, onComplete }) => {
       formData.append(`timestamp_${index + 1}`, capture.timestamp);
     });
     
-    const response = await fetch('/api/neutral-capture', {
+    const response = await fetch('/api/participants/neutral-capture', {
       method: 'POST',
       credentials: 'include',
       body: formData
