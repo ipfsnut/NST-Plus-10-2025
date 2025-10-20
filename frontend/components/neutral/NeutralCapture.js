@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCamera } from '../common/DualCameraProvider';
 import '../../styles/NeutralCapture.css';
+import '../../styles/TargetDisplay.css';
 
 /**
  * NeutralCapture - Captures baseline facial expression before tasks begin
@@ -193,28 +194,39 @@ const NeutralCapture = ({ participantId, onComplete }) => {
         
       case 'countdown':
         return (
-          <div className="neutral-countdown">
-            <div className="countdown-display">
-              <h2>Get Ready</h2>
-              <div className="countdown-number">{countdown}</div>
-              <p>Look at the center cross and maintain a neutral expression</p>
-            </div>
-            
-            {/* Centered fixation cross for consistent eye orientation */}
-            <div className="fixation-container">
+          <div className="target-container">
+            <div className="target-display">
               <div className="fixation-cross">
                 <div className="cross-horizontal"></div>
                 <div className="cross-vertical"></div>
               </div>
+            </div>
+            
+            <div className="target-status">
+              Get Ready - {countdown}
+            </div>
+            
+            <div className="target-instructions">
+              Look at the center cross and maintain a neutral expression
             </div>
           </div>
         );
         
       case 'capturing':
         return (
-          <div className="neutral-capturing">
-            <div className="capturing-display">
-              <h2>Capturing {captureCount} of {TOTAL_CAPTURES}</h2>
+          <div className="target-container target-capturing">
+            <div className="target-display">
+              <div className="fixation-cross">
+                <div className="cross-horizontal"></div>
+                <div className="cross-vertical"></div>
+              </div>
+            </div>
+            
+            <div className="target-status">
+              Capturing {captureCount} of {TOTAL_CAPTURES}
+            </div>
+            
+            <div className="target-secondary-status">
               <div className="capture-progress">
                 <div className="progress-bar">
                   <div 
@@ -223,15 +235,10 @@ const NeutralCapture = ({ participantId, onComplete }) => {
                   ></div>
                 </div>
               </div>
-              <p>Keep looking at the center cross - hold still</p>
             </div>
             
-            {/* Centered fixation cross during capture */}
-            <div className="fixation-container">
-              <div className="fixation-cross capturing">
-                <div className="cross-horizontal"></div>
-                <div className="cross-vertical"></div>
-              </div>
+            <div className="target-instructions">
+              Keep looking at the center cross - hold still
             </div>
           </div>
         );

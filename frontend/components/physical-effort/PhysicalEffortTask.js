@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCamera } from '../common/DualCameraProvider';
 import ConfigScreen from './ConfigScreen';
+import '../../styles/TargetDisplay.css';
 
 /**
  * PhysicalEffortTask - Physical effort task using handgrip dynamometer
@@ -343,30 +344,33 @@ const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) =>
         
       case 'training':
         return (
-          <div className="physical-effort-training">
+          <div className="target-container">
             {!trainingComplete ? (
-              <div className="training-display">
-                <div className="training-header">
-                  <h2>Practice Session</h2>
-                </div>
-                
-                <div className="target-instruction">
-                  <h3>Squeeze to {targetDot}</h3>
-                </div>
-                
-                <div className="equipment-view">
-                  {/* This would show the dynamometer view */}
-                  <div className="dynamometer-display">
-                    <p>Look at your dynamometer and squeeze to reach {targetDot}</p>
+              <>
+                <div className="target-display">
+                  <div className="target-element">
+                    {targetDot}
                   </div>
+                </div>
+                
+                <div className="target-status">
+                  Practice Session
+                </div>
+                
+                <div className="target-instructions">
+                  Squeeze the dynamometer to reach {targetDot}
+                </div>
+                
+                <div className="equipment-view-overlay">
+                  <p>Look at your dynamometer and squeeze to reach {targetDot}</p>
                 </div>
                 
                 {captureTimer && (
-                  <div className="countdown-display">
+                  <div className="target-secondary-status">
                     Hold for {captureTimer}...
                   </div>
                 )}
-              </div>
+              </>
             ) : (
               <div className="training-complete">
                 <h2>Practice Complete!</h2>
@@ -394,36 +398,46 @@ const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) =>
         
       case 'experiment':
         return (
-          <div className="physical-effort-experiment">
+          <div className="target-container">
             {restTimer ? (
-              <div className="rest-display">
-                <h2>REST</h2>
-                <div className="rest-countdown">{restTimer}s</div>
-                <p>Relax your hand completely</p>
-              </div>
+              <>
+                <div className="target-display">
+                  <div className="target-element">REST</div>
+                </div>
+                <div className="target-status">
+                  {restTimer}s remaining
+                </div>
+                <div className="target-instructions">
+                  Relax your hand completely
+                </div>
+              </>
             ) : (
-              <div className="trial-display">
-                <div className="trial-header">
-                  <h2>Squeeze to {targetDot}</h2>
+              <>
+                <div className="target-display">
+                  <div className="target-element">
+                    {targetDot}
+                  </div>
                 </div>
                 
-                <div className="equipment-view">
-                  <div className="dynamometer-display">
-                    <p>Squeeze the dynamometer to reach {targetDot}</p>
-                    <p>Hold steady when you reach the target</p>
-                  </div>
+                <div className="target-progress">
+                  Trial {currentTrial + 1} of {totalRepetitions * 2}
+                </div>
+                
+                <div className="target-instructions">
+                  Squeeze the dynamometer to reach {targetDot} - Hold steady when you reach the target
+                </div>
+                
+                <div className="equipment-view-overlay">
+                  <p>Look at your dynamometer display</p>
+                  <p>Squeeze to reach {targetDot}</p>
                 </div>
                 
                 {captureTimer && (
-                  <div className="capture-countdown">
+                  <div className="target-status">
                     Photo in {captureTimer}...
                   </div>
                 )}
-                
-                <div className="trial-progress">
-                  Trial {currentTrial + 1} of {totalRepetitions * 2}
-                </div>
-              </div>
+              </>
             )}
           </div>
         );

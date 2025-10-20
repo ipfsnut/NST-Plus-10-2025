@@ -1,0 +1,164 @@
+/* TargetDisplay.css - Shared target positioning system for all NST Plus tasks */
+
+/* Base target container - centers target and organizes prompts around it */
+.target-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  font-family: var(--font-mono);
+}
+
+/* Main target display area - always center screen */
+.target-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 10;
+}
+
+/* Common target styling for digits, crosses, and instructions */
+.target-element {
+  font-size: 72px;
+  font-weight: bold;
+  text-align: center;
+  color: var(--matrix-green);
+  text-shadow: 0 0 20px var(--matrix-green);
+}
+
+/* Instruction text positioning - consistent across all tasks */
+.target-instructions {
+  position: absolute;
+  bottom: 20vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  text-align: center;
+  font-size: 24px;
+  color: var(--matrix-green);
+}
+
+/* Status indicators - positioned at top */
+.target-status {
+  position: absolute;
+  top: 20vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  text-align: center;
+  font-size: 18px;
+  color: var(--matrix-green);
+  opacity: 0.8;
+}
+
+/* Secondary status area for additional info */
+.target-secondary-status {
+  position: absolute;
+  top: 15vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  text-align: center;
+  font-size: 16px;
+  color: var(--matrix-green-dim);
+}
+
+/* Fixation cross for neutral and any gaze-directed tasks */
+.fixation-cross {
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+
+.cross-horizontal,
+.cross-vertical {
+  position: absolute;
+  background: var(--matrix-green);
+  transition: var(--transition);
+  box-shadow: 0 0 10px var(--matrix-green);
+}
+
+.cross-horizontal {
+  width: 40px;
+  height: 4px;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
+
+.cross-vertical {
+  width: 4px;
+  height: 40px;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+}
+
+/* Target highlighting during capture */
+.target-capturing .target-element,
+.target-capturing .fixation-cross .cross-horizontal,
+.target-capturing .fixation-cross .cross-vertical {
+  color: var(--matrix-red);
+  background: var(--matrix-red);
+  box-shadow: 0 0 15px var(--matrix-red);
+  text-shadow: 0 0 30px var(--matrix-red);
+}
+
+/* Equipment view overlay - for physical effort task */
+.equipment-view-overlay {
+  position: absolute;
+  bottom: 30vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid var(--matrix-green);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  text-align: center;
+}
+
+/* Progress indicators */
+.target-progress {
+  position: absolute;
+  top: 10vh;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  color: var(--matrix-green-dim);
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-height: 600px) {
+  .target-instructions {
+    bottom: 15vh;
+    font-size: 20px;
+  }
+  
+  .target-status {
+    top: 15vh;
+    font-size: 16px;
+  }
+  
+  .target-element {
+    font-size: 60px;
+  }
+}
+
+@media (max-width: 768px) {
+  .equipment-view-overlay {
+    width: 300px;
+    bottom: 25vh;
+  }
+  
+  .target-instructions {
+    font-size: 20px;
+    padding: 0 var(--space-md);
+  }
+}
