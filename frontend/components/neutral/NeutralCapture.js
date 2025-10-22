@@ -168,8 +168,7 @@ const NeutralCapture = ({ participantId, onComplete }) => {
                 <h3>Instructions:</h3>
                 <ul>
                   <li>Look at the center cross on the screen</li>
-                  <li>Keep a relaxed, neutral expression</li>
-                  <li>Hold still during each capture</li>
+                  <li>Hold still</li>
                   <li>We will take 5 photos with 2-second intervals</li>
                   <li>The captures will begin after a 3-second countdown</li>
                 </ul>
@@ -207,7 +206,7 @@ const NeutralCapture = ({ participantId, onComplete }) => {
             </div>
             
             <div className="target-instructions">
-              Look at the center cross and maintain a neutral expression
+              Look at the center cross
             </div>
           </div>
         );

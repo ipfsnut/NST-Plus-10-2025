@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useCamera } from '../common/DualCameraProvider';
-import DigitDisplay from '../DigitDisplay';
 import ResponseHandler from '../ResponseHandler';
 import { 
   startExperiment, 
   nextDigit, 
   completeExperiment,
-  recordResponse 
+  recordResponse,
+  setKeyMapping 
 } from '../../redux/experimentSlice';
 
 /**
@@ -18,7 +18,13 @@ const NSTTask = ({ participantId, onComplete }) => {
   const { captureBothCameras } = useCamera();
   
   const experimentState = useSelector(state => state.experiment);
-  const { isRunning, currentDigit, trialState, sessionData } = experimentState || {};
+  const { 
+    isRunning = false, 
+    currentDigit = null, 
+    trialState = {}, 
+    sessionData = {}, 
+    keyMapping = null 
+  } = experimentState || {};
   
   const [taskPhase, setTaskPhase] = useState('instructions'); // instructions, training, running, complete
   const [trainingPhase, setTrainingPhase] = useState('ready'); // ready, active, feedback, complete
@@ -29,13 +35,31 @@ const NSTTask = ({ participantId, onComplete }) => {
   const [isProcessingCaptures, setIsProcessingCaptures] = useState(false);
   const [trainingStartTime, setTrainingStartTime] = useState(null);
 
+  // Initialize key mapping if not already set
+  useEffect(() => {
+    if (!keyMapping) {
+      // Randomly assign F/J to odd/even
+      const randomizeKeys = Math.random() < 0.5;
+      const mapping = randomizeKeys 
+        ? { odd: 'f', even: 'j', responseStyle: 'f-odd' }
+        : { odd: 'j', even: 'f', responseStyle: 'j-odd' };
+      
+      console.log('Setting random key mapping:', mapping);
+      dispatch(setKeyMapping(mapping));
+    }
+  }, [keyMapping, dispatch]);
+
   // Keyboard event handling for training
   useEffect(() => {
     if (taskPhase !== 'training' || trainingPhase !== 'active') return;
 
     const handleKeyPress = (e) => {
       const key = e.key.toLowerCase();
-      if (key === 'f' || key === 'j') {
+      if (!keyMapping) {
+        console.warn('NST: Key mapping not initialized, ignoring key press');
+        return;
+      }
+      if (key === keyMapping.odd || key === keyMapping.even) {
         const responseTime = Date.now() - trainingStartTime;
         handleTrainingResponse(key, responseTime);
       }
@@ -74,32 +98,85 @@ const NSTTask = ({ participantId, onComplete }) => {
   };
 
   /**
-   * Generate training trials with feedback
+   * Generate training trials using real NST number generation
    */
-  const generateTrainingTrials = () => {
-    const trials = [];
-    const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
-    // Shuffle and take 10 practice digits
-    const shuffled = [...digits].sort(() => Math.random() - 0.5);
-    for (let digit of shuffled) {
-      trials.push({
-        digit,
-        correctAnswer: digit % 2 === 0 ? 'even' : 'odd',
-        userResponse: null,
-        responseTime: null,
-        correct: null
+  const generateTrainingTrials = async () => {
+    try {
+      // Request a practice trial from the backend using real NST generation
+      const response = await fetch('/api/generate-practice-trial', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          participantId,
+          taskType: 'nst-practice'
+        })
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate practice trial');
+      }
+      
+      const practiceData = await response.json();
+      
+      // Extract individual digits from the generated number sequence
+      const trials = [];
+      const numberSequence = practiceData.number; // e.g., "123456789123456"
+      
+      // Take first 10 digits for practice
+      for (let i = 0; i < Math.min(10, numberSequence.length); i++) {
+        const digit = parseInt(numberSequence[i]);
+        trials.push({
+          digit,
+          correctAnswer: digit % 2 === 0 ? 'even' : 'odd',
+          userResponse: null,
+          responseTime: null,
+          correct: null
+        });
+      }
+      
+      setTrainingTrials(trials);
+      setCurrentTrainingTrial(0);
+      
+    } catch (error) {
+      console.error('Failed to generate practice trials:', error);
+      // Fallback to simple generation without 0
+      const trials = [];
+      const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+      const shuffled = [...digits].sort(() => Math.random() - 0.5);
+      for (let digit of shuffled) {
+        trials.push({
+          digit,
+          correctAnswer: digit % 2 === 0 ? 'even' : 'odd',
+          userResponse: null,
+          responseTime: null,
+          correct: null
+        });
+      }
+      setTrainingTrials(trials);
+      setCurrentTrainingTrial(0);
     }
-    setTrainingTrials(trials);
-    setCurrentTrainingTrial(0);
   };
 
   /**
    * Handle training trial response
    */
   const handleTrainingResponse = (key, responseTime) => {
-    const response = key === 'f' ? 'odd' : 'even';
+    if (!keyMapping) {
+      console.error('NST: Cannot handle training response - key mapping not initialized');
+      return;
+    }
+    
+    const response = key === keyMapping.odd ? 'odd' : 'even';
     const trial = trainingTrials[currentTrainingTrial];
+    
+    if (!trial) {
+      console.error('NST: Cannot handle training response - no current trial');
+      return;
+    }
+    
     const isCorrect = response === trial.correctAnswer;
     
     // Update trial with response
@@ -168,6 +245,11 @@ const NSTTask = ({ participantId, onComplete }) => {
    * Check if we should capture a photo based on current position
    */
   const checkShouldCapture = () => {
+    if (!trialState || typeof trialState.digitIndex !== 'number') {
+      console.warn('NST: Cannot check capture - trial state not initialized');
+      return false;
+    }
+    
     const { digitIndex } = trialState;
     const { firstCapture, interval } = nstConfig.captureConfig;
     
@@ -328,50 +410,29 @@ const NSTTask = ({ participantId, onComplete }) => {
       case 'instructions':
         return (
           <div className="nst-instructions">
-            <h2>Number Switching Task</h2>
-            <div className="instruction-content">
-              <p>In this task, you will categorize numbers as odd or even.</p>
-              <p>Numbers will appear one at a time in the center of the screen.</p>
-              
-              <div className="key-instructions">
-                <h3>Response Keys:</h3>
-                <div className="key-mapping">
-                  <div className="key-pair">
-                    <kbd>F</kbd>
-                    <span className="arrow">←</span>
-                    <span className="category odd">ODD</span>
-                    <span className="examples">(1, 3, 5, 7, 9)</span>
-                  </div>
-                  <div className="key-pair">
-                    <span className="category even">EVEN</span>
-                    <span className="examples">(0, 2, 4, 6, 8)</span>
-                    <span className="arrow">→</span>
-                    <kbd>J</kbd>
-                  </div>
-                </div>
+            <h2>Cognitive Effort Task</h2>
+            
+            <div className="key-mapping-clean">
+              <div className="key-group">
+                <kbd className="key-f">{keyMapping?.odd?.toUpperCase() || 'F'}</kbd>
+                <span className="key-label">ODD</span>
               </div>
-              
-              <div className="task-details">
-                <h3>Important:</h3>
-                <ul>
-                  <li>Respond as quickly as possible while staying accurate</li>
-                  <li>Keep your eyes on the center throughout the task</li>
-                  <li>Your facial expressions will be photographed during some responses</li>
-                  <li>Each digit appears for 1.5 seconds</li>
-                </ul>
+              <div className="key-group">
+                <kbd className="key-j">{keyMapping?.even?.toUpperCase() || 'J'}</kbd>
+                <span className="key-label">EVEN</span>
               </div>
-              
-              <p className="training-note">
-                We'll start with 10 practice trials with feedback before the main task.
-              </p>
-              
-              <button 
-                className="start-button"
-                onClick={startTraining}
-              >
-                Start Practice Trials
-              </button>
             </div>
+            
+            <p className="simple-instruction">
+              Respond as quickly and accurately as possible.
+            </p>
+            
+            <button 
+              className="start-button-clean"
+              onClick={startTraining}
+            >
+              Start Practice
+            </button>
           </div>
         );
         
@@ -379,14 +440,16 @@ const NSTTask = ({ participantId, onComplete }) => {
         return (
           <div className="nst-training">
             {trainingPhase === 'active' && (
-              <div className="training-active">
-                <h3>Practice Trial {currentTrainingTrial + 1} of 10</h3>
-                <div className="digit-display training">
-                  {trainingTrials[currentTrainingTrial]?.digit}
+              <div className="training-active target-container">
+                <div className="target-display">
+                  <div className="target-element">
+                    {trainingTrials[currentTrainingTrial]?.digit}
+                  </div>
                 </div>
-                <div className="key-reminder">
-                  <span><kbd>F</kbd> = ODD</span>
-                  <span><kbd>J</kbd> = EVEN</span>
+                
+                <div className="target-instructions">
+                  Practice Trial {currentTrainingTrial + 1} of 10<br/>
+                  <kbd>{keyMapping?.odd?.toUpperCase() || 'F'}</kbd> = ODD &nbsp;&nbsp;&nbsp; <kbd>{keyMapping?.even?.toUpperCase() || 'J'}</kbd> = EVEN
                 </div>
               </div>
             )}
@@ -451,18 +514,20 @@ const NSTTask = ({ participantId, onComplete }) => {
       case 'running':
         return (
           <div className="nst-running">
-            <div className="nst-display">
-              <DigitDisplay 
-                digit={currentDigit}
-                isVisible={isRunning}
-              />
+            <div className="target-container">
+              <div className="target-display">
+                <div className="target-element">
+                  {currentDigit}
+                </div>
+              </div>
               
               <ResponseHandler 
                 onResponse={handleResponse}
                 isActive={isRunning && currentDigit !== null}
               />
               
-              {/* Trial progress */}
+              {/* Trial progress - hidden during active task */}
+              {false && (
               <div className="trial-progress">
                 <div className="progress-info">
                   Trial {trialState.trialNumber} - Digit {trialState.digitIndex + 1} of 15
@@ -481,6 +546,7 @@ const NSTTask = ({ participantId, onComplete }) => {
                   </div>
                 )}
               </div>
+              )}
               
               {/* Rest period display */}
               {!isRunning && !experimentState.isComplete && (

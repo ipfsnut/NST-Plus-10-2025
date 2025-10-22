@@ -174,7 +174,7 @@ const GlobalCameraSettings = ({ hideButton = false }) => {
           {/* Second Camera */}
           <div>
             <h3 style={{ color: '#00ff00', marginBottom: '10px' }}>
-              Equipment Camera (Dynamometer)
+              Equipment Camera (Hand-Grip Dynamometer)
             </h3>
             
             <select
@@ -192,7 +192,7 @@ const GlobalCameraSettings = ({ hideButton = false }) => {
               }}
             >
               <option value="">
-                {camerasInitialized ? 'Select Equipment Camera (Optional)' : 'Loading...'}
+                {camerasInitialized ? 'Select Hand-Grip Camera (Optional)' : 'Loading...'}
               </option>
               {cameras.map((camera, index) => (
                 <option key={camera.deviceId} value={camera.deviceId}>

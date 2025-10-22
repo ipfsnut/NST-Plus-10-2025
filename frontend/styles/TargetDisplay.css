@@ -25,11 +25,13 @@
 
 /* Common target styling for digits, crosses, and instructions */
 .target-element {
-  font-size: 72px;
+  font-size: 300px;
   font-weight: bold;
   text-align: center;
   color: var(--matrix-green);
-  text-shadow: 0 0 20px var(--matrix-green);
+  text-shadow: 0 0 40px var(--matrix-green);
+  letter-spacing: 0.05em;
+  line-height: 0.9;
 }
 
 /* Instruction text positioning - consistent across all tasks */
@@ -40,8 +42,9 @@
   transform: translateX(-50%);
   width: 100%;
   text-align: center;
-  font-size: 24px;
+  font-size: 32px;
   color: var(--matrix-green);
+  font-weight: 500;
 }
 
 /* Status indicators - positioned at top */
@@ -182,16 +185,17 @@
 @media (max-height: 600px) {
   .target-instructions {
     bottom: 15vh;
-    font-size: 20px;
+    font-size: 28px;
   }
   
   .target-status {
     top: 15vh;
-    font-size: 16px;
+    font-size: 18px;
   }
   
   .target-element {
-    font-size: 60px;
+    font-size: 250px;
+    line-height: 0.8;
   }
   
   .camera-target-main {
@@ -214,6 +218,11 @@
   .target-instructions {
     font-size: 20px;
     padding: 0 var(--space-md);
+  }
+  
+  .target-element {
+    font-size: 200px;
+    line-height: 0.7;
   }
   
   .camera-target-main {

@@ -7,6 +7,7 @@ import PhysicalEffortTask from '../physical-effort/PhysicalEffortTask';
 import Tutorial from './Tutorial';
 import { DualCameraProvider } from './DualCameraProvider';
 import GlobalCameraSettings from './GlobalCameraSettings';
+import DevPanel from './DevPanel';
 
 /**
  * ExperimentController - Main orchestrator for the NST Plus experiment
@@ -296,6 +297,91 @@ const ExperimentController = () => {
   const isNSTOrPhysicalEffort = currentTask === 'nst' || currentTask === 'physical-effort';
   const shouldHideUI = isActiveTask && isNSTOrPhysicalEffort;
 
+  /**
+   * Handle dev panel screen changes
+   */
+  const handleDevScreenChange = (screenId) => {
+    console.log('Dev panel changing to screen:', screenId);
+    
+    // Map screen IDs to phases and states
+    switch (screenId) {
+      case 'registration':
+        setCurrentPhase('registration');
+        break;
+      case 'neutral-instructions':
+        setCurrentPhase('neutral-capture');
+        break;
+      case 'neutral-capture':
+        setCurrentPhase('neutral-capture');
+        break;
+      case 'nst-instructions':
+        setCurrentPhase('tutorial');
+        setCurrentTaskIndex(0);
+        // Set participant data if not set
+        if (!participant) {
+          setExperimentData(prev => ({
+            ...prev,
+            participant: { 
+              participantId: 'dev-test',
+              taskOrder: ['nst', 'physical-effort'],
+              gender: 'M'
+            }
+          }));
+        }
+        break;
+      case 'nst-practice':
+      case 'nst-running':
+        setCurrentPhase('task');
+        setCurrentTaskIndex(0);
+        // Set NST as current task
+        if (!participant) {
+          setExperimentData(prev => ({
+            ...prev,
+            participant: { 
+              participantId: 'dev-test',
+              taskOrder: ['nst', 'physical-effort'],
+              gender: 'M'
+            }
+          }));
+        }
+        break;
+      case 'physical-instructions':
+        setCurrentPhase('tutorial');
+        setCurrentTaskIndex(1);
+        if (!participant) {
+          setExperimentData(prev => ({
+            ...prev,
+            participant: { 
+              participantId: 'dev-test',
+              taskOrder: ['nst', 'physical-effort'],
+              gender: 'M'
+            }
+          }));
+        }
+        break;
+      case 'physical-practice':
+      case 'physical-experiment':
+        setCurrentPhase('task');
+        setCurrentTaskIndex(1);
+        if (!participant) {
+          setExperimentData(prev => ({
+            ...prev,
+            participant: { 
+              participantId: 'dev-test',
+              taskOrder: ['nst', 'physical-effort'],
+              gender: 'M'
+            }
+          }));
+        }
+        break;
+      case 'camera-config':
+        // Camera config is handled by GlobalCameraSettings
+        break;
+      default:
+        console.log('Unknown screen ID:', screenId);
+    }
+  };
+
   return (
     <DualCameraProvider>
       <div className="experiment-container">
@@ -323,6 +409,9 @@ const ExperimentController = () => {
         <div className="phase-content">
           {renderCurrentPhase()}
         </div>
+        
+        {/* Development Panel - only in development mode */}
+        <DevPanel onScreenChange={handleDevScreenChange} />
         
       </div>
     </DualCameraProvider>

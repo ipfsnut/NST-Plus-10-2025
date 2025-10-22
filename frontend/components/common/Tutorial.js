@@ -9,7 +9,7 @@ const Tutorial = ({ taskType, onComplete }) => {
   // Tutorial content for each task type
   const tutorialContent = {
     'nst': {
-      title: 'Number Switching Task (NST)',
+      title: 'Number Switching Task (Cognitive Effort)',
       steps: [
         {
           title: 'Task Overview',
@@ -31,7 +31,7 @@ const Tutorial = ({ taskType, onComplete }) => {
                   <kbd>F</kbd> <span>for ODD numbers (1, 3, 5, 7, 9)</span>
                 </div>
                 <div className="key-pair">
-                  <kbd>J</kbd> <span>for EVEN numbers (0, 2, 4, 6, 8)</span>
+                  <kbd>J</kbd> <span>for EVEN numbers (2, 4, 6, 8)</span>
                 </div>
               </div>
               <p>Place your left index finger on F and right index finger on J.</p>

@@ -10,7 +10,11 @@ import '../../styles/PhysicalEffort.css';
  * Adapted from face-capture app with proper integration into NST Plus
  */
 const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) => {
-  const { captureBothCameras } = useCamera();
+  const { 
+    captureBothCameras,
+    selectedMainCamera,
+    selectedSecondCamera 
+  } = useCamera();
   
   const [taskPhase, setTaskPhase] = useState('instructions'); // instructions, training, experiment, complete
   const [currentTrial, setCurrentTrial] = useState(0);
@@ -21,21 +25,33 @@ const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) =>
   const [showConfig, setShowConfig] = useState(false);
   const [trainingComplete, setTrainingComplete] = useState(false);
   
-  // Effort levels based on gender (from original face-capture app)
+  // Effort levels based on gender - 3 dots per participant
   const effortLevels = {
-    'M': { low: 'Dot 2', high: 'Dot 3' },
-    'F': { low: 'Dot 1', high: 'Dot 2' },
-    'O': { low: 'Dot 1', high: 'Dot 2' } // Default for other
+    'M': { dots: ['Dot 2', 'Dot 3', 'Dot 4'] },
+    'Male': { dots: ['Dot 2', 'Dot 3', 'Dot 4'] },
+    'F': { dots: ['Dot 1', 'Dot 2', 'Dot 3'] },
+    'Female': { dots: ['Dot 1', 'Dot 2', 'Dot 3'] },
+    'O': { dots: ['Dot 1', 'Dot 2', 'Dot 3'] }, // Default for other/prefer not to say
+    'Other': { dots: ['Dot 1', 'Dot 2', 'Dot 3'] },
+    'Prefer not to say': { dots: ['Dot 1', 'Dot 2', 'Dot 3'] }
   };
   
   const totalRepetitions = 5;
   const restDuration = 10; // seconds
   
-  // Training trials
-  const trainingTrials = [
-    { effort: 'low', dot: 'Dot 1', type: 'training' },
-    { effort: 'high', dot: 'Dot 3', type: 'training' }
-  ];
+  // Training trials - now using participant's assigned dots
+  const getTrainingTrials = () => {
+    console.log('PhysicalEffortTask - participantGender:', participantGender);
+    console.log('PhysicalEffortTask - effortLevels:', effortLevels);
+    
+    const participantDots = effortLevels[participantGender]?.dots || effortLevels['O'].dots;
+    console.log('PhysicalEffortTask - selected dots:', participantDots);
+    
+    return [
+      { effort: 'low', dot: participantDots[0], type: 'training' },
+      { effort: 'high', dot: participantDots[2], type: 'training' }  // Use highest dot for training
+    ];
+  };
 
   /**
    * Start the physical effort task
@@ -49,6 +65,7 @@ const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) =>
    * Run the training sequence
    */
   const runTrainingSequence = () => {
+    const trainingTrials = getTrainingTrials();
     let trainingIndex = 0;
     
     const runTrainingTrial = () => {
@@ -99,22 +116,19 @@ const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) =>
    * Generate and run experimental trials
    */
   const generateAndRunTrials = () => {
-    const effortSet = effortLevels[participantGender] || effortLevels['O'];
+    console.log('generateAndRunTrials - participantGender:', participantGender);
+    const participantDots = effortLevels[participantGender]?.dots || effortLevels['O'].dots;
+    console.log('generateAndRunTrials - selected dots:', participantDots);
     
-    // Create trials array
+    // Create trials array - 5 repetitions of each of the 3 assigned dots (15 total trials)
     const trials = [];
     for (let i = 0; i < totalRepetitions; i++) {
-      trials.push({ 
-        effort: 'low', 
-        dot: effortSet.low, 
-        rep: i + 1,
-        trialId: `low-${i + 1}`
-      });
-      trials.push({ 
-        effort: 'high', 
-        dot: effortSet.high, 
-        rep: i + 1,
-        trialId: `high-${i + 1}`
+      participantDots.forEach((dot, dotIndex) => {
+        trials.push({ 
+          dot: dot, 
+          rep: i + 1,
+          trialId: `${dot.toLowerCase().replace(' ', '-')}-${i + 1}`
+        });
       });
     }
     
@@ -311,13 +325,16 @@ const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) =>
                 <h3>Target Levels:</h3>
                 <div className="effort-levels">
                   <div className="effort-level">
-                    <strong>Dot 1:</strong> Low effort (light squeeze)
+                    <strong>Dot 1</strong>
                   </div>
                   <div className="effort-level">
-                    <strong>Dot 2:</strong> Medium effort (moderate squeeze)
+                    <strong>Dot 2</strong> 
                   </div>
                   <div className="effort-level">
-                    <strong>Dot 3:</strong> High effort (strong squeeze)
+                    <strong>Dot 3</strong> 
+                  </div>
+                  <div className="effort-level">
+                    <strong>Dot 4</strong> 
                   </div>
                 </div>
               </div>
@@ -346,44 +363,58 @@ const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) =>
         
       case 'training':
         return (
-          <div className="target-container">
+          <div className="physical-effort-experiment">
             {!trainingComplete ? (
-              <>
-                <div className="target-display">
-                  <div className="target-element">
-                    {targetDot}
+              <div className="trial-display">
+                {/* Dark background */}
+                <div className="task-background"></div>
+                
+                {/* Circular Camera Feed in Center */}
+                <div className="circular-camera-container">
+                  <CameraView 
+                    camera={selectedSecondCamera ? "second" : "main"}
+                    visible={true}
+                    className="circular-camera-feed"
+                  />
+                  
+                  {/* Training Target Overlay */}
+                  <div className="camera-dot-overlay">
+                    <div className="target-dot-label">
+                      {targetDot}
+                    </div>
+                    <div className="target-instruction">
+                      Practice: Squeeze to reach this target
+                    </div>
                   </div>
                 </div>
                 
-                <div className="target-status">
-                  Practice Session
-                </div>
-                
-                <div className="target-instructions">
-                  Squeeze the dynamometer to reach {targetDot}
-                </div>
-                
-                <div className="equipment-view-overlay">
-                  <p>Look at your dynamometer and squeeze to reach {targetDot}</p>
-                </div>
-                
-                {captureTimer && (
-                  <div className="target-secondary-status">
-                    Hold for {captureTimer}...
+                {/* Practice Progress */}
+                {!captureTimer && (
+                  <div className="trial-progress-overlay">
+                    Practice Session
                   </div>
                 )}
-              </>
+                
+                {/* Training Timer */}
+                {captureTimer && (
+                  <div className="capture-timer-overlay">
+                    {captureTimer}
+                  </div>
+                )}
+              </div>
             ) : (
               <div className="training-complete">
                 <h2>Practice Complete!</h2>
                 <p>You've practiced all three effort levels successfully.</p>
-                <p className="next-step">In the main task, you'll complete 5 trials using dots assigned based on your profile.</p>
+                <p className="next-step">In the main task, you'll complete 5 trials.</p>
                 <div className="assigned-dots">
-                  <strong>Your assigned levels:</strong>
+                  <strong>Your assigned targets:</strong>
                   <ul>
-                    <li>Lower effort: {effortLevels[participantGender]?.low || 'Dot 1'}</li>
-                    <li>Higher effort: {effortLevels[participantGender]?.high || 'Dot 2'}</li>
+                    {(effortLevels[participantGender]?.dots || effortLevels['O'].dots).map((dot, index) => (
+                      <li key={index}>{dot}</li>
+                    ))}
                   </ul>
+                  <p>You'll complete 5 trials for each target (15 total trials).</p>
                 </div>
                 <div className="training-actions">
                   <button onClick={() => runTrainingSequence()}>
@@ -406,26 +437,43 @@ const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) =>
                 <div className="rest-message">
                   <h2>REST</h2>
                   <div className="rest-countdown">{restTimer}s</div>
-                  <p>Relax your hand completely</p>
+                  <p>Relax</p>
                 </div>
               </div>
             ) : (
               <div className="trial-display">
-                {/* Equipment Camera Feed with Target Overlay */}
-                <div className="equipment-camera-container">
+                {/* Dark background */}
+                <div className="task-background"></div>
+                
+                {/* Circular Camera Feed in Center */}
+                <div className="circular-camera-container">
                   <CameraView 
-                    camera="second" 
+                    camera={selectedSecondCamera ? "second" : "main"}
                     visible={true}
-                    className="equipment-camera-feed"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover'
-                    }}
+                    className="circular-camera-feed"
                   />
                   
-                  {/* Target Dot Overlay */}
-                  <div className="dot-target-overlay">
+                  {/* Debug info for camera selection */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '10px',
+                      left: '10px',
+                      background: 'rgba(0,0,0,0.8)',
+                      color: 'white',
+                      padding: '5px',
+                      fontSize: '12px',
+                      borderRadius: '3px',
+                      zIndex: 20
+                    }}>
+                      Using: {selectedSecondCamera ? "second" : "main"} camera<br/>
+                      Second: {selectedSecondCamera || 'none'}<br/>
+                      Main: {selectedMainCamera || 'none'}
+                    </div>
+                  )}
+                  
+                  {/* Target Dot Overlay on Camera */}
+                  <div className="camera-dot-overlay">
                     <div className="target-dot-label">
                       {targetDot}
                     </div>
@@ -433,19 +481,14 @@ const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) =>
                       Squeeze to reach this target
                     </div>
                   </div>
-                  
-                  {/* Trial Progress */}
+                </div>
+                
+                {/* Trial Progress - hidden during photo capture */}
+                {!captureTimer && (
                   <div className="trial-progress-overlay">
                     Trial {currentTrial + 1} of {totalRepetitions * 2}
                   </div>
-                  
-                  {/* Capture Timer */}
-                  {captureTimer && (
-                    <div className="capture-timer-overlay">
-                      Photo in {captureTimer}...
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
             )}
           </div>
