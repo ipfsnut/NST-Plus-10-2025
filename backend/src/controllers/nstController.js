@@ -1,5 +1,5 @@
 const path = require('path');
-const { generateTrialNumbers } = require('../utils/markovChain');
+const { generateTrialNumbers, generateMarkovNumber } = require('../utils/markovChain');
 const MediaHandler = require('../services/mediaHandler');
 const mediaHandler = new MediaHandler(path.join(process.cwd(), 'uploads'));
 const stateManager = require('../services/stateManager');
@@ -551,6 +551,39 @@ const exportResults = async (req, res) => {
   }
 };
 
+/**
+ * Generate practice trial for cognitive effort task
+ * @frontend NSTTask practice phase
+ * Creates a simple practice sequence for user training
+ * Frontend needs: participantId, taskType (POST body)
+ * Frontend receives: number sequence for practice
+ */
+const generatePracticeTrial = async (req, res) => {
+  try {
+    const { participantId, taskType } = req.body;
+    
+    if (!participantId || !taskType) {
+      return res.status(400).json({ 
+        error: 'participantId and taskType required' 
+      });
+    }
+
+    // Generate a simple practice sequence using effort level 2 (easy)
+    const practiceSequence = generateMarkovNumber(2, config.experimentConfig);
+    
+    res.json({
+      number: practiceSequence.number,
+      effortLevel: practiceSequence.effortLevel,
+      metadata: practiceSequence.metadata,
+      participantId,
+      taskType
+    });
+  } catch (error) {
+    console.error('Practice trial generation error:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   startSession,
   getExperimentState,
@@ -572,7 +605,8 @@ module.exports = {
   validateExportData,
   reportError,
   getRecoveryInstructions,
-  exportResults
+  exportResults,
+  generatePracticeTrial
 };
 
 

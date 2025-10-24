@@ -247,6 +247,16 @@ router.get('/captures/:sessionId', nstController.getSessionCaptures);
  */
 router.post('/export/validate', nstController.validateExportData);
 
+/**
+ * @route POST /api/generate-practice-trial
+ * @desc Generate practice trial sequence
+ * @state ANY
+ * @frontend CORE ENDPOINT - Used in NSTTask for practice phase
+ * @triggers Practice sequence generation via markovChain
+ * @returns {Object} practice number sequence, effortLevel, metadata
+ */
+router.post('/generate-practice-trial', nstController.generatePracticeTrial);
+
 // Add these routes alongside existing ones
 router.post('/capture', nstController.submitCapture);
 router.get('/export/:sessionId', nstController.exportSessionData);
