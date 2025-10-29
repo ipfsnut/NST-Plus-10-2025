@@ -424,7 +424,7 @@ const NSTTask = ({ participantId, onComplete }) => {
             </div>
             
             <p className="simple-instruction">
-              Respond as quickly and accurately as possible.
+              Respond as quickly as possible while still labeling every digit accurately.
             </p>
             
             <button 

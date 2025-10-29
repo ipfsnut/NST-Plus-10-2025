@@ -29,6 +29,9 @@ npm-debug.log*
 uploads/
 temp/
 
+# Data directory
+backend/data/
+
 # OS generated files
 .DS_Store
 .DS_Store?

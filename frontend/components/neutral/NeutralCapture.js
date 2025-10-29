@@ -271,31 +271,6 @@ const NeutralCapture = ({ participantId, onComplete }) => {
         </div>
       </div>
       
-      {/* Development: Show camera previews */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="dev-camera-preview">
-          <div className="preview-camera">
-            <h4>Main Camera</h4>
-            <video
-              ref={mainVideoRef}
-              autoPlay
-              playsInline
-              muted
-              style={{ width: '200px', height: '150px', border: '1px solid #ccc' }}
-            />
-          </div>
-          <div className="preview-camera">
-            <h4>Equipment Camera</h4>
-            <video
-              ref={secondVideoRef}
-              autoPlay
-              playsInline
-              muted
-              style={{ width: '200px', height: '150px', border: '1px solid #ccc' }}
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 };

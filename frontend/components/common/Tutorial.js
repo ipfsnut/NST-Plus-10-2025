@@ -54,10 +54,8 @@ const Tutorial = ({ taskType, onComplete }) => {
           content: (
             <div>
               <p>• <strong>Stay focused</strong> on the center of the screen</p>
-              <p>• <strong>Respond quickly</strong> but try to be accurate</p>
-              <p>• <strong>Keep your hands</strong> positioned on F and J keys</p>
-              <p>• <strong>Look directly</strong> at the camera when instructed</p>
-              <p>• <strong>Take breaks</strong> between trials to rest</p>
+              <p>• <strong>Respond quickly</strong> but label the digits correctly</p>
+              <p>• <strong>Keep your hands</strong> positioned on the keyboard</p>
             </div>
           )
         }
@@ -72,7 +70,6 @@ const Tutorial = ({ taskType, onComplete }) => {
             <div>
               <p>In this task, you will use a handgrip dynamometer to exert physical effort.</p>
               <p>You'll be asked to squeeze the device to move the dial to specific target levels.</p>
-              <p>Your effort and facial expressions will be recorded for analysis.</p>
             </div>
           )
         },
@@ -81,17 +78,9 @@ const Tutorial = ({ taskType, onComplete }) => {
           content: (
             <div>
               <p>The handgrip dynamometer is the device you'll squeeze.</p>
-              <p>You'll see target dots (Dot 1, Dot 2, Dot 3) representing different effort levels:</p>
+              <p>You'll see target dots (Dot 1, Dot 2, Dot 3, Dot 4) representing different effort levels.</p>
               <div className="effort-levels">
-                <div className="effort-level">
-                  <strong>Dot 1:</strong> Low effort (light squeeze)
-                </div>
-                <div className="effort-level">
-                  <strong>Dot 2:</strong> Medium effort (moderate squeeze)
-                </div>
-                <div className="effort-level">
-                  <strong>Dot 3:</strong> High effort (strong squeeze)
-                </div>
+                <p>Each increasing Dot requires a little more force to reach.</p>
               </div>
             </div>
           )
@@ -102,9 +91,8 @@ const Tutorial = ({ taskType, onComplete }) => {
             <div>
               <p>1. You'll see which target dot to aim for</p>
               <p>2. Squeeze the dynamometer to move the dial to that dot</p>
-              <p>3. Hold the pressure at the target level when instructed</p>
-              <p>4. Your camera will capture your face during the effort</p>
-              <p>5. Rest between trials</p>
+              <p>3. Hold the pressure at the target level until instructed to rest</p>
+              <p>4. Rest between trials</p>
             </div>
           )
         },
@@ -112,12 +100,9 @@ const Tutorial = ({ taskType, onComplete }) => {
           title: 'Important Instructions',
           content: (
             <div>
-              <p>• <strong>Look at the target</strong> indicator at the top of the screen</p>
-              <p>• <strong>Squeeze gradually</strong> to reach the target dot</p>
+              <p>• <strong>Look at the target</strong> indicator in the middle of the screen</p>
+              <p>• <strong>Squeeze</strong> to reach the target dot</p>
               <p>• <strong>Hold steady</strong> when you reach the target</p>
-              <p>• <strong>Maintain</strong> natural facial expressions</p>
-              <p>• <strong>Rest completely</strong> between trials</p>
-              <p>• <strong>Ask for help</strong> if you're unsure about anything</p>
             </div>
           )
         }
