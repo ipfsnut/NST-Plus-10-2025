@@ -144,9 +144,7 @@ const Tutorial = ({ taskType, onComplete }) => {
       {/* Practice/Skip options for last step */}
       {isLastStep && (
         <div className="tutorial-actions">
-          <p className="ready-message">
-            Ready to begin? You can start the task or ask the researcher any questions.
-          </p>
+          
         </div>
       )}
     </div>
