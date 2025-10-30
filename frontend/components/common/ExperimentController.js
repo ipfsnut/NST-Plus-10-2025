@@ -148,6 +148,26 @@ const ExperimentController = () => {
   };
 
   /**
+   * Check if we're currently in an experimental task (not setup/config)
+   */
+  const isInExperimentalTask = () => {
+    const experimentalPhases = ['task-1', 'task-2'];
+    const experimentalScreens = ['nst-practice', 'nst-running', 'physical-practice', 'physical-experiment'];
+    
+    // Check current phase
+    if (experimentalPhases.includes(currentPhase)) {
+      return true;
+    }
+    
+    // Check if we're in a dev-triggered experimental screen
+    if (experimentalScreens.includes(currentPhase)) {
+      return true;
+    }
+    
+    return false;
+  };
+
+  /**
    * Export experiment data
    */
   const handleExportData = async () => {
@@ -410,8 +430,8 @@ const ExperimentController = () => {
           {renderCurrentPhase()}
         </div>
         
-        {/* Development Panel - only in development mode */}
-        <DevPanel onScreenChange={handleDevScreenChange} />
+        {/* Development Panel - only in development mode and only during setup phases */}
+        {!isInExperimentalTask() && <DevPanel onScreenChange={handleDevScreenChange} />}
         
       </div>
     </DualCameraProvider>

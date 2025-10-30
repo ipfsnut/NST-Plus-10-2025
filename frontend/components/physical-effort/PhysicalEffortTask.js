@@ -42,10 +42,25 @@ const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) =>
   // Training trials - now using participant's assigned dots
   const getTrainingTrials = () => {
     console.log('PhysicalEffortTask - participantGender:', participantGender);
-    console.log('PhysicalEffortTask - effortLevels:', effortLevels);
+    console.log('PhysicalEffortTask - participantGender type:', typeof participantGender);
+    console.log('PhysicalEffortTask - available keys:', Object.keys(effortLevels));
+    console.log('PhysicalEffortTask - exact match found:', !!effortLevels[participantGender]);
     
-    const participantDots = effortLevels[participantGender]?.dots || effortLevels['O'].dots;
+    // Normalize gender and get dots
+    const genderKey = participantGender?.toString().trim().toUpperCase();
+    let participantDots;
+    
+    if (genderKey === 'M' || genderKey === 'MALE') {
+      participantDots = effortLevels['M'].dots;
+    } else if (genderKey === 'F' || genderKey === 'FEMALE') {
+      participantDots = effortLevels['F'].dots;
+    } else {
+      participantDots = effortLevels['O'].dots; // Default for other/prefer not to say
+    }
+    
     console.log('PhysicalEffortTask - selected dots:', participantDots);
+    console.log('PhysicalEffortTask - normalized gender key:', genderKey);
+    console.log('PhysicalEffortTask - dots assigned:', participantDots);
     
     return [
       { effort: 'low', dot: participantDots[0], type: 'training' },
@@ -236,7 +251,7 @@ const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) =>
         `physical-effort-equipment-${captureData.trial.trialId}.jpg`);
     }
     
-    const response = await fetch('/api/physical-effort-capture', {
+    const response = await fetch('/api/participants/physical-effort-capture', {
       method: 'POST',
       credentials: 'include',
       body: formData
@@ -284,7 +299,7 @@ const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) =>
         completionTime: new Date().toISOString()
       };
       
-      const response = await fetch('/api/physical-effort-complete', {
+      const response = await fetch('/api/participants/physical-effort-complete', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -343,12 +358,6 @@ const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) =>
               <p>Your facial expressions will be captured during effort exertion.</p>
               
               <div className="task-controls">
-                <button 
-                  className="config-button"
-                  onClick={() => setShowConfig(true)}
-                >
-                  ⚙️ Camera Settings
-                </button>
                 
                 <button 
                   className="start-button"
@@ -453,8 +462,8 @@ const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) =>
                     className="circular-camera-feed"
                   />
                   
-                  {/* Debug info for camera selection */}
-                  {process.env.NODE_ENV === 'development' && (
+                  {/* Debug info for camera selection - hidden by default */}
+                  {false && process.env.NODE_ENV === 'development' && (
                     <div style={{
                       position: 'absolute',
                       top: '10px',

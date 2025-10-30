@@ -34,6 +34,11 @@ export const DualCameraProvider = ({ children }) => {
   const mainStreamRef = useRef(null);
   const secondStreamRef = useRef(null);
   
+  // Stream monitoring
+  const [mainStreamActive, setMainStreamActive] = useState(false);
+  const [secondStreamActive, setSecondStreamActive] = useState(false);
+  const streamMonitorRef = useRef(null);
+  
   // Canvas refs for image capture
   const mainCanvasRef = useRef(null);
   const secondCanvasRef = useRef(null);
@@ -49,8 +54,12 @@ export const DualCameraProvider = ({ children }) => {
     if (savedMain) setSelectedMainCamera(savedMain);
     if (savedSecond) setSelectedSecondCamera(savedSecond);
     
+    // Start stream monitoring
+    startStreamMonitoring();
+    
     // Cleanup on unmount
     return () => {
+      stopStreamMonitoring();
       stopAllCameras();
     };
   }, []);
@@ -116,6 +125,7 @@ export const DualCameraProvider = ({ children }) => {
     try {
       // Stop existing stream if any
       if (mainStreamRef.current) {
+        removeStreamListeners(mainStreamRef.current);
         mainStreamRef.current.getTracks().forEach(track => track.stop());
         mainStreamRef.current = null;
       }
@@ -137,17 +147,22 @@ export const DualCameraProvider = ({ children }) => {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       mainStreamRef.current = stream;
       
+      // Add stream event listeners for monitoring
+      addStreamListeners(stream, 'main');
+      
       // Connect to video element
       if (mainVideoRef.current) {
         mainVideoRef.current.srcObject = stream;
         await mainVideoRef.current.play();
-        console.log('Main camera started:', deviceId || 'default');
+        console.log('✅ Main camera started:', deviceId || 'default');
+        setMainStreamActive(true);
       }
       
       return stream;
       
     } catch (err) {
-      console.error('Error starting main camera:', err);
+      console.error('❌ Error starting main camera:', err);
+      setMainStreamActive(false);
       dispatch(setCaptureError('Main camera failed: ' + err.message));
       return null;
     }
@@ -160,12 +175,14 @@ export const DualCameraProvider = ({ children }) => {
     try {
       // Stop existing stream if any
       if (secondStreamRef.current) {
+        removeStreamListeners(secondStreamRef.current);
         secondStreamRef.current.getTracks().forEach(track => track.stop());
         secondStreamRef.current = null;
       }
       
       if (!deviceId) {
         console.log('No second camera selected');
+        setSecondStreamActive(false);
         return null;
       }
       
@@ -181,17 +198,22 @@ export const DualCameraProvider = ({ children }) => {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       secondStreamRef.current = stream;
       
+      // Add stream event listeners for monitoring
+      addStreamListeners(stream, 'second');
+      
       // Connect to video element
       if (secondVideoRef.current) {
         secondVideoRef.current.srcObject = stream;
         await secondVideoRef.current.play();
-        console.log('Second camera started:', deviceId);
+        console.log('✅ Second camera started:', deviceId);
+        setSecondStreamActive(true);
       }
       
       return stream;
       
     } catch (err) {
-      console.error('Error starting second camera:', err);
+      console.error('❌ Error starting second camera:', err);
+      setSecondStreamActive(false);
       // Second camera is optional, so just log the error
       return null;
     }
@@ -201,14 +223,16 @@ export const DualCameraProvider = ({ children }) => {
    * Stop all camera streams
    */
   const stopAllCameras = () => {
-    console.log('Stopping all cameras');
+    console.log('🛑 Stopping all cameras');
     
     if (mainStreamRef.current) {
+      removeStreamListeners(mainStreamRef.current);
       mainStreamRef.current.getTracks().forEach(track => track.stop());
       mainStreamRef.current = null;
     }
     
     if (secondStreamRef.current) {
+      removeStreamListeners(secondStreamRef.current);
       secondStreamRef.current.getTracks().forEach(track => track.stop());
       secondStreamRef.current = null;
     }
@@ -219,6 +243,145 @@ export const DualCameraProvider = ({ children }) => {
     
     if (secondVideoRef.current) {
       secondVideoRef.current.srcObject = null;
+    }
+    
+    setMainStreamActive(false);
+    setSecondStreamActive(false);
+  };
+
+  /**
+   * Add event listeners to monitor stream health
+   */
+  const addStreamListeners = (stream, cameraType) => {
+    console.log(`🔍 Adding monitoring for ${cameraType} camera stream`);
+    
+    stream.getTracks().forEach(track => {
+      track.addEventListener('ended', () => {
+        console.warn(`⚠️ ${cameraType} camera track ended unexpectedly`);
+        if (cameraType === 'main') {
+          setMainStreamActive(false);
+          // Auto-restart main camera since it's critical
+          setTimeout(() => restartCamera('main'), 1000);
+        } else {
+          setSecondStreamActive(false);
+          // Auto-restart second camera  
+          setTimeout(() => restartCamera('second'), 1000);
+        }
+      });
+      
+      track.addEventListener('mute', () => {
+        console.warn(`⚠️ ${cameraType} camera track muted`);
+      });
+      
+      track.addEventListener('unmute', () => {
+        console.log(`✅ ${cameraType} camera track unmuted`);
+      });
+    });
+    
+    stream.addEventListener('inactive', () => {
+      console.warn(`⚠️ ${cameraType} camera stream became inactive`);
+      if (cameraType === 'main') {
+        setMainStreamActive(false);
+      } else {
+        setSecondStreamActive(false);
+      }
+    });
+    
+    stream.addEventListener('active', () => {
+      console.log(`✅ ${cameraType} camera stream became active`);
+      if (cameraType === 'main') {
+        setMainStreamActive(true);
+      } else {
+        setSecondStreamActive(true);
+      }
+    });
+  };
+
+  /**
+   * Remove event listeners from stream
+   */
+  const removeStreamListeners = (stream) => {
+    if (!stream) return;
+    
+    // Remove all event listeners by cloning the stream's event target
+    // This is a simple way to remove all listeners without tracking them
+    stream.getTracks().forEach(track => {
+      track.removeEventListener('ended', () => {});
+      track.removeEventListener('mute', () => {});
+      track.removeEventListener('unmute', () => {});
+    });
+  };
+
+  /**
+   * Restart a specific camera
+   */
+  const restartCamera = async (cameraType) => {
+    console.log(`🔄 Attempting to restart ${cameraType} camera`);
+    
+    try {
+      if (cameraType === 'main' && selectedMainCamera) {
+        await startMainCamera(selectedMainCamera);
+      } else if (cameraType === 'second' && selectedSecondCamera) {
+        await startSecondCamera(selectedSecondCamera);
+      }
+    } catch (err) {
+      console.error(`❌ Failed to restart ${cameraType} camera:`, err);
+      // Try one more time after a longer delay
+      setTimeout(() => {
+        if (cameraType === 'main' && selectedMainCamera) {
+          startMainCamera(selectedMainCamera);
+        } else if (cameraType === 'second' && selectedSecondCamera) {
+          startSecondCamera(selectedSecondCamera);
+        }
+      }, 5000);
+    }
+  };
+
+  /**
+   * Start periodic stream monitoring
+   */
+  const startStreamMonitoring = () => {
+    console.log('🔍 Starting stream health monitoring');
+    
+    streamMonitorRef.current = setInterval(() => {
+      // Check main stream health
+      if (selectedMainCamera && mainStreamRef.current) {
+        const stream = mainStreamRef.current;
+        const isActive = stream.active && stream.getTracks().some(track => track.readyState === 'live');
+        
+        if (!isActive && mainStreamActive) {
+          console.warn('⚠️ Main camera stream health check failed - restarting');
+          setMainStreamActive(false);
+          restartCamera('main');
+        } else if (isActive && !mainStreamActive) {
+          setMainStreamActive(true);
+        }
+      }
+      
+      // Check second stream health
+      if (selectedSecondCamera && secondStreamRef.current) {
+        const stream = secondStreamRef.current;
+        const isActive = stream.active && stream.getTracks().some(track => track.readyState === 'live');
+        
+        if (!isActive && secondStreamActive) {
+          console.warn('⚠️ Second camera stream health check failed - restarting');
+          setSecondStreamActive(false);
+          restartCamera('second');
+        } else if (isActive && !secondStreamActive) {
+          setSecondStreamActive(true);
+        }
+      }
+    }, 5000); // Check every 5 seconds
+  };
+
+  /**
+   * Stop stream monitoring
+   */
+  const stopStreamMonitoring = () => {
+    if (streamMonitorRef.current) {
+      console.log('🛑 Stopping stream monitoring');
+      clearInterval(streamMonitorRef.current);
+      streamMonitorRef.current = null;
     }
   };
 
@@ -427,6 +590,10 @@ export const DualCameraProvider = ({ children }) => {
     setSelectedMainCamera,
     setSelectedSecondCamera,
     
+    // Stream status
+    mainStreamActive,
+    secondStreamActive,
+    
     // Video refs for display components
     mainVideoRef,
     secondVideoRef,
@@ -441,7 +608,8 @@ export const DualCameraProvider = ({ children }) => {
     startMainCamera,
     startSecondCamera,
     stopAllCameras,
-    initializeCameraDevices
+    initializeCameraDevices,
+    restartCamera
   };
 
   return (

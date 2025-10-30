@@ -17,7 +17,7 @@ const Tutorial = ({ taskType, onComplete }) => {
             <div>
               <p>In this task, you will see sequences of numbers appearing on the screen.</p>
               <p>Your job is to identify whether each number is <strong>odd</strong> or <strong>even</strong>.</p>
-              <p>You need to respond as quickly and accurately as possible.</p>
+              <p>You need to respond as quickly and accurately as possible, while still labeling all of the digits <strong>correctly</strong>.</p>
             </div>
           )
         },
@@ -35,27 +35,6 @@ const Tutorial = ({ taskType, onComplete }) => {
                 </div>
               </div>
               <p>Place your left index finger on F and right index finger on J.</p>
-            </div>
-          )
-        },
-        {
-          title: 'What to Expect',
-          content: (
-            <div>
-              <p>Each trial will show a sequence of 15 numbers.</p>
-              <p>Numbers will appear one at a time for a brief moment.</p>
-              <p>Your camera will capture images during the task for analysis.</p>
-              <p>There will be rest periods between trials.</p>
-            </div>
-          )
-        },
-        {
-          title: 'Tips for Success',
-          content: (
-            <div>
-              <p>• <strong>Stay focused</strong> on the center of the screen</p>
-              <p>• <strong>Respond quickly</strong> but label the digits correctly</p>
-              <p>• <strong>Keep your hands</strong> positioned on the keyboard</p>
             </div>
           )
         }
@@ -82,27 +61,6 @@ const Tutorial = ({ taskType, onComplete }) => {
               <div className="effort-levels">
                 <p>Each increasing Dot requires a little more force to reach.</p>
               </div>
-            </div>
-          )
-        },
-        {
-          title: 'How It Works',
-          content: (
-            <div>
-              <p>1. You'll see which target dot to aim for</p>
-              <p>2. Squeeze the dynamometer to move the dial to that dot</p>
-              <p>3. Hold the pressure at the target level until instructed to rest</p>
-              <p>4. Rest between trials</p>
-            </div>
-          )
-        },
-        {
-          title: 'Important Instructions',
-          content: (
-            <div>
-              <p>• <strong>Look at the target</strong> indicator in the middle of the screen</p>
-              <p>• <strong>Squeeze</strong> to reach the target dot</p>
-              <p>• <strong>Hold steady</strong> when you reach the target</p>
             </div>
           )
         }
