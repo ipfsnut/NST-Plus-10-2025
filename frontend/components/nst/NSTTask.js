@@ -91,10 +91,11 @@ const NSTTask = ({ participantId, onComplete }) => {
   /**
    * Start NST training phase
    */
-  const startTraining = () => {
+  const startTraining = async () => {
     setTaskPhase('training');
-    setTrainingPhase('active');
-    generateTrainingTrials();
+    setTrainingPhase('ready'); // Set to ready while generating trials
+    await generateTrainingTrials(); // Wait for trials to be generated
+    setTrainingPhase('active'); // Only activate after trials are ready
   };
 
   /**
@@ -139,6 +140,7 @@ const NSTTask = ({ participantId, onComplete }) => {
       
       setTrainingTrials(trials);
       setCurrentTrainingTrial(0);
+      console.log('Training trials generated:', trials.length, 'trials');
       
     } catch (error) {
       console.error('Failed to generate practice trials:', error);
@@ -157,6 +159,7 @@ const NSTTask = ({ participantId, onComplete }) => {
       }
       setTrainingTrials(trials);
       setCurrentTrainingTrial(0);
+      console.log('Fallback training trials generated:', trials.length, 'trials');
     }
   };
 
@@ -170,10 +173,18 @@ const NSTTask = ({ participantId, onComplete }) => {
     }
     
     const response = key === keyMapping.odd ? 'odd' : 'even';
+    if (!trainingTrials || trainingTrials.length === 0) {
+      console.error('NST: Cannot handle training response - no training trials available');
+      return;
+    }
+    
     const trial = trainingTrials[currentTrainingTrial];
     
     if (!trial) {
-      console.error('NST: Cannot handle training response - no current trial');
+      console.error('NST: Cannot handle training response - no current trial', {
+        currentTrainingTrial,
+        trialsLength: trainingTrials.length
+      });
       return;
     }
     
@@ -439,6 +450,13 @@ const NSTTask = ({ participantId, onComplete }) => {
       case 'training':
         return (
           <div className="nst-training">
+            {trainingPhase === 'ready' && (
+              <div className="training-ready">
+                <h3>Preparing Practice Trials...</h3>
+                <p>Generating practice numbers, please wait...</p>
+              </div>
+            )}
+            
             {trainingPhase === 'active' && (
               <div className="training-active target-container">
                 <div className="target-display">
