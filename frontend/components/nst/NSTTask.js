@@ -7,7 +7,8 @@ import {
   nextDigit, 
   completeExperiment,
   recordResponse,
-  setKeyMapping 
+  setKeyMapping,
+  setTrials 
 } from '../../redux/experimentSlice';
 
 /**
@@ -220,13 +221,53 @@ const NSTTask = ({ participantId, onComplete }) => {
   /**
    * Start the NST experiment after training
    */
-  const startNSTExperiment = () => {
-    dispatch(startExperiment({
-      participantId,
-      taskType: 'nst',
-      config: nstConfig
-    }));
-    setTaskPhase('running');
+  const startNSTExperiment = async () => {
+    try {
+      // Call backend to start session and get trials
+      const response = await fetch('/api/start', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          participantId,
+          taskType: 'nst'
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to start NST session');
+      }
+      
+      const sessionData = await response.json();
+      console.log('NST session started:', sessionData);
+      
+      // Dispatch Redux action with session data
+      dispatch(startExperiment({
+        participantId,
+        taskType: 'nst',
+        config: nstConfig
+      }));
+      
+      // Set trials in Redux state
+      dispatch(setTrials(sessionData.trials));
+      
+      // Update trial state with first digit
+      if (sessionData.trialState) {
+        dispatch({ 
+          type: 'experiment/updateTrialState', 
+          payload: sessionData.trialState 
+        });
+      }
+      
+      setTaskPhase('running');
+      
+    } catch (error) {
+      console.error('Failed to start NST experiment:', error);
+      // Show error state or retry option
+      alert('Failed to start experiment. Please try again.');
+    }
   };
 
   /**
