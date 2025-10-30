@@ -60,20 +60,19 @@ const Tutorial = ({ taskType, onComplete }) => {
               <h3>Target Levels:</h3>
               <div className="effort-levels">
                 <div className="effort-level">
-                  <strong>Dot 1</strong> - Lowest effort level
+                  <strong>Dot 1</strong> - Low effort
                 </div>
                 <div className="effort-level">
-                  <strong>Dot 2</strong> - Low-medium effort level
+                  <strong>Dot 2</strong> - Low-medium effort 
                 </div>
                 <div className="effort-level">
-                  <strong>Dot 3</strong> - Medium-high effort level
+                  <strong>Dot 3</strong> - Medium-high effort 
                 </div>
                 <div className="effort-level">
-                  <strong>Dot 4</strong> - Highest effort level
+                  <strong>Dot 4</strong> - High effort 
                 </div>
               </div>
               <p>We'll start with a practice session, then proceed to the main task.</p>
-              <p>You'll be assigned specific target levels based on your demographics.</p>
             </div>
           )
         }
