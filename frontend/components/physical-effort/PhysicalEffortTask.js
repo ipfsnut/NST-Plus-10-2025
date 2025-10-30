@@ -16,7 +16,7 @@ const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) =>
     selectedSecondCamera 
   } = useCamera();
   
-  const [taskPhase, setTaskPhase] = useState('instructions'); // instructions, training, experiment, complete
+  const [taskPhase, setTaskPhase] = useState('training'); // training, experiment, complete
   const [currentTrial, setCurrentTrial] = useState(0);
   const [targetDot, setTargetDot] = useState('');
   const [captureTimer, setCaptureTimer] = useState(null);
@@ -24,6 +24,13 @@ const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) =>
   const [capturedImages, setCapturedImages] = useState([]);
   const [showConfig, setShowConfig] = useState(false);
   const [trainingComplete, setTrainingComplete] = useState(false);
+  
+  // Auto-start training when component mounts
+  useEffect(() => {
+    if (taskPhase === 'training') {
+      startTask();
+    }
+  }, []);
   
   // Effort levels based on gender - 3 dots per participant
   const effortLevels = {
@@ -328,48 +335,6 @@ const PhysicalEffortTask = ({ participantId, participantGender, onComplete }) =>
 
   const renderTaskPhase = () => {
     switch (taskPhase) {
-      case 'instructions':
-        return (
-          <div className="physical-effort-instructions">
-            <h2>Physical Effort Task</h2>
-            <div className="instruction-content">
-              <p>You will use the handgrip dynamometer to exert physical effort.</p>
-              <p>Squeeze the device to move the dial to the specified target dot.</p>
-              
-              <div className="effort-explanation">
-                <h3>Target Levels:</h3>
-                <div className="effort-levels">
-                  <div className="effort-level">
-                    <strong>Dot 1</strong>
-                  </div>
-                  <div className="effort-level">
-                    <strong>Dot 2</strong> 
-                  </div>
-                  <div className="effort-level">
-                    <strong>Dot 3</strong> 
-                  </div>
-                  <div className="effort-level">
-                    <strong>Dot 4</strong> 
-                  </div>
-                </div>
-              </div>
-              
-              <p>We'll start with a practice session, then proceed to the main task.</p>
-              <p>Your facial expressions will be captured during effort exertion.</p>
-              
-              <div className="task-controls">
-                
-                <button 
-                  className="start-button"
-                  onClick={startTask}
-                >
-                  Start Practice
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-        
       case 'training':
         return (
           <div className="physical-effort-experiment">

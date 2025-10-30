@@ -47,20 +47,33 @@ const Tutorial = ({ taskType, onComplete }) => {
           title: 'Task Overview',
           content: (
             <div>
-              <p>In this task, you will use a handgrip dynamometer to exert physical effort.</p>
-              <p>You'll be asked to squeeze the device to move the dial to specific target levels.</p>
+              <p>You will use the handgrip dynamometer to exert physical effort.</p>
+              <p>Squeeze the device to move the dial to the specified target dot.</p>
+              <p>Your facial expressions will be captured during effort exertion.</p>
             </div>
           )
         },
         {
-          title: 'Equipment Setup',
+          title: 'Target Levels',
           content: (
             <div>
-              <p>The handgrip dynamometer is the device you'll squeeze.</p>
-              <p>You'll see target dots (Dot 1, Dot 2, Dot 3, Dot 4) representing different effort levels.</p>
+              <h3>Target Levels:</h3>
               <div className="effort-levels">
-                <p>Each increasing Dot requires a little more force to reach.</p>
+                <div className="effort-level">
+                  <strong>Dot 1</strong> - Lowest effort level
+                </div>
+                <div className="effort-level">
+                  <strong>Dot 2</strong> - Low-medium effort level
+                </div>
+                <div className="effort-level">
+                  <strong>Dot 3</strong> - Medium-high effort level
+                </div>
+                <div className="effort-level">
+                  <strong>Dot 4</strong> - Highest effort level
+                </div>
               </div>
+              <p>We'll start with a practice session, then proceed to the main task.</p>
+              <p>You'll be assigned specific target levels based on your demographics.</p>
             </div>
           )
         }
